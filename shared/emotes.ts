@@ -54,3 +54,36 @@ export function kickParts(content: string): MessagePart[] | undefined {
 export function cleanKickText(content: string): string {
   return content.replace(/\[emote:\d+:([^\]]+)\]/g, "$1");
 }
+
+// Expand word-based emotes (7TV / BTTV / FFZ / sub emotes) within the text parts,
+// leaving already-resolved native emote parts untouched.
+export function expandWordEmotes(
+  parts: MessagePart[] | undefined,
+  text: string,
+  emotes: Map<string, string> | null,
+): MessagePart[] | undefined {
+  if (!emotes || emotes.size === 0) return parts;
+  const base: MessagePart[] = parts ?? [{ t: "text", v: text }];
+  const out: MessagePart[] = [];
+  for (const p of base) {
+    if (p.t !== "text") {
+      out.push(p);
+      continue;
+    }
+    let buf = "";
+    for (const tok of p.v.split(/(\s+)/)) {
+      const url = emotes.get(tok);
+      if (url) {
+        if (buf) {
+          out.push({ t: "text", v: buf });
+          buf = "";
+        }
+        out.push({ t: "emote", name: tok, url });
+      } else {
+        buf += tok;
+      }
+    }
+    if (buf) out.push({ t: "text", v: buf });
+  }
+  return out;
+}

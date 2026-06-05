@@ -2,12 +2,16 @@
 import tmi from "tmi.js";
 import type { BadgeInfo, MessageFlags, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
-import { twitchParts } from "../../shared/emotes";
+import { twitchParts, expandWordEmotes } from "../../shared/emotes";
+import { getTwitchEmotes } from "../emoteRegistry";
 import type { Adapter, Emit, StatusFn } from "./types";
 
 export function createTwitchAdapter(channel: string, emit: Emit, status: StatusFn): Adapter {
   const chan = channel.replace(/^#/, "").toLowerCase().trim();
   status("twitch", "connecting");
+
+  let emoteMap: Map<string, string> | null = null;
+  let loadStarted = false;
 
   const client = new tmi.Client({
     options: { skipUpdatingEmotesets: true },
@@ -20,6 +24,15 @@ export function createTwitchAdapter(channel: string, emit: Emit, status: StatusF
 
   client.on("message", (_channel, tags, message, self) => {
     if (self) return;
+    if (!loadStarted && tags["room-id"]) {
+      loadStarted = true;
+      getTwitchEmotes(String(tags["room-id"]), chan)
+        .then((m) => {
+          emoteMap = m;
+          status("twitch", "connected", `${chan} · ${m.size} emotes`);
+        })
+        .catch(() => {});
+    }
     const b = (tags.badges ?? {}) as Record<string, string | undefined>;
 
     const flags: MessageFlags = {
@@ -49,7 +62,7 @@ export function createTwitchAdapter(channel: string, emit: Emit, status: StatusF
       timestamp: Date.now(),
       badges,
       flags,
-      parts: twitchParts(message, tags.emotes),
+      parts: expandWordEmotes(twitchParts(message, tags.emotes), message, emoteMap),
     };
     msg.intelligence = analyze(message, flags);
     emit(msg);

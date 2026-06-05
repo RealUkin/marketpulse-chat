@@ -3,9 +3,10 @@
 import WebSocket from "ws";
 import type { BadgeInfo, MessageFlags, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
-import { kickParts, cleanKickText } from "../../shared/emotes";
+import { kickParts, cleanKickText, expandWordEmotes } from "../../shared/emotes";
 import type { Adapter, Emit, StatusFn } from "./types";
 import { newPlainContext } from "../browser";
+import { getKickEmotes } from "../emoteRegistry";
 
 const PUSHER_URL =
   "wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=8.4.0&flash=false";
@@ -13,11 +14,21 @@ const PUSHER_URL =
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-async function resolveChatroomId(slug: string): Promise<number | null> {
+interface KickIds {
+  chatroomId: number;
+  channelId?: number; // broadcaster user id, for 7TV
+}
+
+function parseKick(data: any): KickIds | null {
+  if (!data?.chatroom?.id) return null;
+  return { chatroomId: data.chatroom.id, channelId: data.user_id ?? data.user?.id ?? data.id };
+}
+
+async function resolveKickChannel(slug: string): Promise<KickIds | null> {
   // 0) Manual override (guaranteed demo reliability): KICK_CHATROOM_<SLUG> or KICK_CHATROOM_ID
   const override =
     process.env[`KICK_CHATROOM_${slug.toUpperCase()}`] ?? process.env.KICK_CHATROOM_ID;
-  if (override && !Number.isNaN(Number(override))) return Number(override);
+  if (override && !Number.isNaN(Number(override))) return { chatroomId: Number(override) };
 
   // 1) Plain fetch — works from residential IPs; 403s behind Cloudflare on datacenter IPs.
   try {
@@ -25,8 +36,8 @@ async function resolveChatroomId(slug: string): Promise<number | null> {
       headers: { "User-Agent": UA, Accept: "application/json" },
     });
     if (res.ok) {
-      const data: any = await res.json();
-      if (data?.chatroom?.id) return data.chatroom.id;
+      const r = parseKick(await res.json());
+      if (r) return r;
     }
   } catch {
     /* fall through to browser */
@@ -42,8 +53,7 @@ async function resolveChatroomId(slug: string): Promise<number | null> {
     });
     const txt = await page.evaluate(() => document.body.innerText);
     await ctx.close();
-    const data = JSON.parse(txt);
-    return data?.chatroom?.id ?? null;
+    return parseKick(JSON.parse(txt));
   } catch {
     return null;
   }
@@ -58,21 +68,28 @@ export function createKickAdapter(slug: string, emit: Emit, status: StatusFn): A
   const clean = slug.replace(/^#/, "").toLowerCase().trim();
   let ws: WebSocket | null = null;
   let stopped = false;
+  let emoteMap: Map<string, string> | null = null;
   status("kick", "connecting");
 
   (async () => {
-    const id = await resolveChatroomId(clean);
+    const ch = await resolveKickChannel(clean);
     if (stopped) return;
-    if (!id) {
-      status("kick", "error", "Couldn't resolve chatroom (Cloudflare). Try Demo Mode or a headless fetch.");
+    if (!ch) {
+      status("kick", "error", "Couldn't resolve chatroom (Cloudflare). Try Demo Mode or set KICK_CHATROOM_<SLUG>.");
       return;
     }
+
+    getKickEmotes(ch.channelId ? String(ch.channelId) : undefined)
+      .then((m) => {
+        emoteMap = m;
+      })
+      .catch(() => {});
 
     ws = new WebSocket(PUSHER_URL, { headers: { "User-Agent": UA } });
 
     ws.on("open", () => {
       status("kick", "connected", clean);
-      ws?.send(JSON.stringify({ event: "pusher:subscribe", data: { auth: "", channel: `chatrooms.${id}.v2` } }));
+      ws?.send(JSON.stringify({ event: "pusher:subscribe", data: { auth: "", channel: `chatrooms.${ch.chatroomId}.v2` } }));
     });
 
     ws.on("message", (raw) => {
@@ -119,7 +136,7 @@ export function createKickAdapter(slug: string, emit: Emit, status: StatusFn): A
         timestamp: d?.created_at ? new Date(d.created_at).getTime() : Date.now(),
         badges,
         flags,
-        parts: kickParts(rawContent),
+        parts: expandWordEmotes(kickParts(rawContent), text, emoteMap),
       };
       msg.intelligence = analyze(text, flags);
       emit(msg);
