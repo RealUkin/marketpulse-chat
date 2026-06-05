@@ -1,0 +1,90 @@
+// Demo adapter — realistic synthetic chat across all 3 platforms.
+// This is the always-on failsafe so the app works instantly with zero API setup.
+import type { BadgeInfo, MessageFlags, Platform, UnifiedMessage } from "../../shared/types";
+import { analyze } from "../../shared/intelligence";
+import type { Adapter, Emit, StatusFn } from "./types";
+
+const NAMES = [
+  "satoshi_fan", "degenmike", "crypto_kate", "wifguy", "0xchad", "ansem_intern",
+  "pumpamentalist", "bagholder99", "moonboi", "liquidated_larry", "polymkt_pro",
+  "gm_gary", "frens_only", "serial_aper", "vibecoder", "wagmi_wendy", "based_dept",
+];
+
+const LINES: Record<Platform, string[]> = {
+  twitch: [
+    "Ansem is cooking again LULW", "chat is at $430k KEKW", "that polymarket pick was insane",
+    "Pog this unified chat is clean", "subbed 6 months gg", "is $SOL sending today?",
+    "W stream", "this UI goes hard", "bullish on $WIF ngl", "when moon ser",
+  ],
+  kick: [
+    "HYPE just different on kick", "green candles only", "is $BTC gonna break 100k?",
+    "kick chat best chat", "mods asleep again", "gifted 5 subs lets go",
+    "what's the play on $ETH", "clean overlay btw", "🚀🚀🚀", "W",
+  ],
+  x: [
+    "thanks for the polymarket picks 🔥", "this aggregator is actually clean",
+    "Ansem cooking again", "what are the odds on $SOL hitting 200?", "gm degens",
+    "Polymarket has this at 62% rn", "is this open source?", "LFG", "bullish", "real",
+  ],
+};
+
+const COLORS = ["#9146FF", "#53FC18", "#1d9bf0", "#e3b341", "#22c55e", "#ef4444", "#f472b6", "#38bdf8"];
+
+const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)];
+
+function makeBadges(platform: Platform): { badges: BadgeInfo[]; flags: MessageFlags } {
+  const badges: BadgeInfo[] = [];
+  const flags: MessageFlags = {
+    broadcaster: false, moderator: false, vip: false, subscriber: false, verified: false,
+  };
+  const r = Math.random();
+  if (platform === "x") {
+    if (r < 0.5) { badges.push({ type: "verified", label: "Verified" }); flags.verified = true; }
+  } else {
+    if (r < 0.06) { badges.push({ type: "broadcaster", label: "Host" }); flags.broadcaster = true; }
+    else if (r < 0.18) { badges.push({ type: "moderator", label: "Mod" }); flags.moderator = true; }
+    else if (r < 0.3) { badges.push({ type: "vip", label: "VIP" }); flags.vip = true; }
+    if (Math.random() < 0.4) {
+      badges.push({ type: "subscriber", label: "Sub", count: 1 + Math.floor(Math.random() * 30) });
+      flags.subscriber = true;
+    }
+  }
+  return { badges, flags };
+}
+
+export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
+  status("twitch", "connected", "demo");
+  status("kick", "connected", "demo");
+  status("x", "connected", "demo");
+
+  const platforms: Platform[] = ["twitch", "kick", "x"];
+
+  const fire = () => {
+    const platform = pick(platforms);
+    const name = pick(NAMES);
+    const text = pick(LINES[platform]);
+    const { badges, flags } = makeBadges(platform);
+    const msg: UnifiedMessage = {
+      id: `demo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      platform,
+      channel: "demo",
+      username: name,
+      displayName: name,
+      color: pick(COLORS),
+      text,
+      timestamp: Date.now(),
+      badges,
+      flags,
+    };
+    msg.intelligence = analyze(text, flags);
+    emit(msg);
+  };
+
+  // Bursty cadence for a lively feel.
+  const interval = setInterval(() => {
+    const n = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < n; i++) setTimeout(fire, Math.random() * 450);
+  }, 850);
+
+  return { stop: () => clearInterval(interval) };
+}

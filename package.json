@@ -1,0 +1,41 @@
+{
+  "name": "marketpulse-chat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unified crypto-native live-chat command center — Twitch + X + Kick in one real-time feed.",
+  "scripts": {
+    "dev": "concurrently -n web,server -c magenta,cyan \"next dev\" \"tsx watch server/index.ts\"",
+    "dev:web": "next dev",
+    "dev:server": "tsx watch server/index.ts",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "x:login": "tsx scripts/save-x-auth.ts"
+  },
+  "dependencies": {
+    "@tanstack/react-virtual": "^3.10.9",
+    "clsx": "^2.1.1",
+    "next": "14.2.21",
+    "playwright": "^1.60.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tmi.js": "^1.8.5",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.15",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/tmi.js": "^1.8.6",
+    "@types/ws": "^8.5.13",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.8"
+  }
+}
