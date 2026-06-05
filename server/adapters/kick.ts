@@ -3,6 +3,7 @@
 import WebSocket from "ws";
 import type { BadgeInfo, MessageFlags, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
+import { kickParts, cleanKickText } from "../../shared/emotes";
 import type { Adapter, Emit, StatusFn } from "./types";
 import { newPlainContext } from "../browser";
 
@@ -105,7 +106,8 @@ export function createKickAdapter(slug: string, emit: Emit, status: StatusFn): A
         count: bd.count,
       }));
 
-      const text: string = d?.content ?? "";
+      const rawContent: string = d?.content ?? "";
+      const text = cleanKickText(rawContent);
       const msg: UnifiedMessage = {
         id: d?.id ?? `kick_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         platform: "kick",
@@ -117,6 +119,7 @@ export function createKickAdapter(slug: string, emit: Emit, status: StatusFn): A
         timestamp: d?.created_at ? new Date(d.created_at).getTime() : Date.now(),
         badges,
         flags,
+        parts: kickParts(rawContent),
       };
       msg.intelligence = analyze(text, flags);
       emit(msg);

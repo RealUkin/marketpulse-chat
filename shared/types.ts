@@ -39,6 +39,10 @@ export interface Intelligence {
   priorityScore: number;
 }
 
+export type MessagePart =
+  | { t: "text"; v: string }
+  | { t: "emote"; name: string; url: string };
+
 export interface UnifiedMessage {
   id: string;
   platform: Platform;
@@ -51,6 +55,7 @@ export interface UnifiedMessage {
   timestamp: number; // ms epoch
   badges: BadgeInfo[];
   flags: MessageFlags;
+  parts?: MessagePart[]; // pre-tokenized text + emote images for rendering
   intelligence?: Intelligence;
 }
 

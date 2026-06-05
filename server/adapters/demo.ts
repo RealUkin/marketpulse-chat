@@ -1,7 +1,8 @@
 // Demo adapter — realistic synthetic chat across all 3 platforms.
 // This is the always-on failsafe so the app works instantly with zero API setup.
-import type { BadgeInfo, MessageFlags, Platform, UnifiedMessage } from "../../shared/types";
+import type { BadgeInfo, MessageFlags, MessagePart, Platform, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
+import { TWITCH_EMOTE } from "../../shared/emotes";
 import type { Adapter, Emit, StatusFn } from "./types";
 
 const NAMES = [
@@ -29,6 +30,12 @@ const LINES: Record<Platform, string[]> = {
 };
 
 const COLORS = ["#9146FF", "#53FC18", "#1d9bf0", "#e3b341", "#22c55e", "#ef4444", "#f472b6", "#38bdf8"];
+
+const EMOTES = [
+  { name: "Kappa", url: TWITCH_EMOTE("25") },
+  { name: "LUL", url: TWITCH_EMOTE("425618") },
+  { name: "PogChamp", url: TWITCH_EMOTE("305954156") },
+];
 
 const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)];
 
@@ -64,6 +71,14 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
     const name = pick(NAMES);
     const text = pick(LINES[platform]);
     const { badges, flags } = makeBadges(platform);
+    let parts: MessagePart[] | undefined;
+    if (Math.random() < 0.4) {
+      const e = pick(EMOTES);
+      parts = [
+        { t: "text", v: `${text} ` },
+        { t: "emote", name: e.name, url: e.url },
+      ];
+    }
     const msg: UnifiedMessage = {
       id: `demo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       platform,
@@ -75,6 +90,7 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
       timestamp: Date.now(),
       badges,
       flags,
+      parts,
     };
     msg.intelligence = analyze(text, flags);
     emit(msg);

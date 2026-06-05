@@ -2,6 +2,7 @@
 import tmi from "tmi.js";
 import type { BadgeInfo, MessageFlags, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
+import { twitchParts } from "../../shared/emotes";
 import type { Adapter, Emit, StatusFn } from "./types";
 
 export function createTwitchAdapter(channel: string, emit: Emit, status: StatusFn): Adapter {
@@ -48,6 +49,7 @@ export function createTwitchAdapter(channel: string, emit: Emit, status: StatusF
       timestamp: Date.now(),
       badges,
       flags,
+      parts: twitchParts(message, tags.emotes),
     };
     msg.intelligence = analyze(message, flags);
     emit(msg);

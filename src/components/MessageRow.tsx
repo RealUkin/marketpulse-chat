@@ -17,6 +17,28 @@ function renderText(text: string, tickers: string[]): ReactNode {
   );
 }
 
+function renderBody(m: UnifiedMessage): ReactNode {
+  const tickers = m.intelligence?.tickers ?? [];
+  if (m.parts && m.parts.length > 0) {
+    return m.parts.map((p, i) =>
+      p.t === "emote" ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={i}
+          src={p.url}
+          alt={p.name}
+          title={p.name}
+          loading="lazy"
+          className="mx-0.5 inline-block h-5 w-auto align-text-bottom"
+        />
+      ) : (
+        <span key={i}>{renderText(p.v, tickers)}</span>
+      ),
+    );
+  }
+  return renderText(m.text, tickers);
+}
+
 function Row({ m }: { m: UnifiedMessage }) {
   const meta = PLATFORM_META[m.platform];
   return (
@@ -43,9 +65,7 @@ function Row({ m }: { m: UnifiedMessage }) {
           {m.displayName}
         </span>
         <span className="text-zinc-500">: </span>
-        <span className="break-words text-zinc-200">
-          {renderText(m.text, m.intelligence?.tickers ?? [])}
-        </span>
+        <span className="break-words text-zinc-200">{renderBody(m)}</span>
       </div>
     </div>
   );

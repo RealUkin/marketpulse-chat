@@ -62,7 +62,21 @@ const OverlayRow = memo(function OverlayRow({ m }: { m: UnifiedMessage }) {
         </span>
         <span className="text-white/60">: </span>
         <span className="text-white" style={{ textShadow: "0 1px 2px rgba(0,0,0,.85)" }}>
-          {m.text}
+          {m.parts && m.parts.length > 0
+            ? m.parts.map((p, i) =>
+                p.t === "emote" ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={p.url}
+                    alt={p.name}
+                    className="mx-0.5 inline-block h-6 w-auto align-text-bottom"
+                  />
+                ) : (
+                  <span key={i}>{p.v}</span>
+                ),
+              )
+            : m.text}
         </span>
       </div>
     </div>
