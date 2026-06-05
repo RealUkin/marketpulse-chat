@@ -32,6 +32,13 @@ describe("analyze() — chat intelligence", () => {
     expect(analyze("btc pumping", noFlags).isQuestion).toBe(false);
   });
 
+  it("flags scam phrases and links", () => {
+    expect(analyze("claim your airdrop at sol-drop.xyz", noFlags).risk).toBe("scam");
+    expect(analyze("double your $SOL now", noFlags).risk).toBe("scam");
+    expect(analyze("check this gm.io/clip", noFlags).risk).toBe("link");
+    expect(analyze("gm everyone how are we", noFlags).risk).toBe("none");
+  });
+
   it("ranks high-value users above normal users", () => {
     const mod = analyze("when moon?", { ...noFlags, moderator: true });
     const normal = analyze("when moon?", noFlags);

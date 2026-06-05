@@ -43,7 +43,9 @@ function Row({ m }: { m: UnifiedMessage }) {
   const meta = PLATFORM_META[m.platform];
   return (
     <div
-      className="group flex animate-slide-in gap-2.5 border-l-2 px-3 py-1.5 hover:bg-ink-850/70"
+      className={`group flex animate-slide-in gap-2.5 border-l-2 px-3 py-1.5 hover:bg-ink-850/70 ${
+        m.intelligence?.risk === "scam" ? "bg-red-950/30" : ""
+      }`}
       style={{ borderColor: meta.color }}
     >
       <span
@@ -54,6 +56,22 @@ function Row({ m }: { m: UnifiedMessage }) {
         {meta.letter}
       </span>
       <div className="min-w-0 flex-1 text-[14px] leading-snug">
+        {m.intelligence?.risk === "scam" && (
+          <span
+            className="mr-1 rounded bg-red-500/25 px-1 align-middle text-[10px] font-bold uppercase text-red-300 ring-1 ring-red-500/50"
+            title="Flagged: possible scam / phishing"
+          >
+            ⚠ scam?
+          </span>
+        )}
+        {m.intelligence?.risk === "link" && (
+          <span
+            className="mr-1 align-middle text-[11px] text-amber-400/80"
+            title="Contains a link or wallet/contract address"
+          >
+            🔗
+          </span>
+        )}
         {m.badges.length > 0 && (
           <span className="mr-1 inline-flex flex-wrap items-center gap-1 align-middle">
             {m.badges.map((b, i) => (

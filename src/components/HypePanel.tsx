@@ -10,6 +10,7 @@ function computeStats(messages: UnifiedMessage[]) {
     bear = 0,
     neu = 0;
   const questions: UnifiedMessage[] = [];
+  const flaggedMsgs: UnifiedMessage[] = [];
   const now = Date.now();
   let rate = 0;
   for (const m of messages) {
@@ -19,6 +20,7 @@ function computeStats(messages: UnifiedMessage[]) {
     else if (se === "bearish") bear++;
     else neu++;
     if (m.intelligence?.isQuestion) questions.push(m);
+    if (m.intelligence?.risk === "scam") flaggedMsgs.push(m);
     if (now - m.timestamp < 60_000) rate++;
   }
   const topTickers = Object.entries(tickers).sort((a, b) => b[1] - a[1]).slice(0, 6);
@@ -32,6 +34,8 @@ function computeStats(messages: UnifiedMessage[]) {
     total: bull + bear + neu,
     rate,
     questions: questions.slice(-4).reverse(),
+    flagged: flaggedMsgs.length,
+    flaggedMsgs: flaggedMsgs.slice(-3).reverse(),
   };
 }
 
@@ -53,6 +57,22 @@ export function HypePanel({ messages, markets }: { messages: UnifiedMessage[]; m
           <span className="mb-1 text-xs text-zinc-500">msgs / min</span>
         </div>
       </Card>
+
+      {s.flagged > 0 && (
+        <Card title="🛡️ Safety — flagged">
+          <div className="flex items-end gap-2">
+            <span className="text-2xl font-black tabular-nums text-bear">{s.flagged}</span>
+            <span className="mb-1 text-xs text-zinc-500">scam / phishing caught</span>
+          </div>
+          <ul className="mt-2 flex flex-col gap-1">
+            {s.flaggedMsgs.map((q) => (
+              <li key={q.id} className="truncate rounded bg-red-950/40 px-2 py-1 text-[11px] text-red-200">
+                <span className="font-semibold">{q.displayName}</span>: {q.text}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       <Card title="Top Tickers">
         {s.topTickers.length === 0 ? (

@@ -38,6 +38,7 @@ export interface Intelligence {
   isQuestion: boolean;
   isHighValueUser: boolean;
   priorityScore: number;
+  risk: "none" | "link" | "scam"; // crypto-grade scam/link flag for moderators
 }
 
 export type MessagePart =

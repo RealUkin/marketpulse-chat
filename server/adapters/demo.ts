@@ -43,6 +43,14 @@ const EMOTES = [
   { name: "PogChamp", url: TWITCH_EMOTE("305954156") },
 ];
 
+// Occasional scam/phishing lines so the Safety filter is demonstrable.
+const SCAM_LINES = [
+  "claim your FREE $SOL airdrop at sol-drop.fun connect wallet",
+  "double your crypto x2 instantly at solx2-claim.xyz 🚀",
+  "free subs + viewers at buy-grow.link dm me to claim",
+  "GIVEAWAY claim now → nitro-gift.gg/free",
+];
+
 const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)];
 
 function makeBadges(platform: Platform): { badges: BadgeInfo[]; flags: MessageFlags } {
@@ -89,7 +97,8 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
   const fire = () => {
     const platform = pick(platforms);
     const name = pick(NAMES);
-    const text = pick(LINES[platform]);
+    let text = pick(LINES[platform]);
+    if (Math.random() < 0.08) text = pick(SCAM_LINES);
     const { badges, flags } = makeBadges(platform);
     let parts: MessagePart[] | undefined;
     if (Math.random() < 0.5) {
