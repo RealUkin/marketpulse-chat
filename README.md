@@ -2,7 +2,7 @@
 
 **The first beautiful, web-native, crypto-intelligent chat command center — and the only one that genuinely reads X _live-broadcast_ chat.**
 
-Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Challenge**: a unified, real-time chat aggregator that merges **Twitch + X + Kick** into one feed with per-source labels — then goes further with normalized roles, a crypto-native intelligence panel, live Polymarket odds, and an OBS overlay.
+Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Challenge**: a unified, real-time chat aggregator that merges **Twitch + X + Kick** (plus a bonus **YouTube** adapter) into one feed with per-source labels — then goes further with full emote support (incl. 7TV/BTTV/FFZ + sub emotes), normalized roles, a crypto-native intelligence panel, live Polymarket odds, and an OBS overlay.
 
 > Existing tools (Restream, Streamlabs, StreamElements, Social Stream Ninja, Streamer.bot) *merge* chat. MarketPulse helps crypto streamers **understand** it.
 
@@ -11,7 +11,8 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
 ## ✨ Features
 
 - **Unified real-time feed** — Twitch, X, and Kick in one stream, each message tagged with a colored source badge (Twitch purple `#9146FF`, Kick green `#53FC18`, X mono).
-- **Normalized identity & roles** — broadcaster / mod / VIP / subscriber (with months) / verified, mapped to one consistent badge system across all three platforms.
+- **Normalized identity & roles** — broadcaster / mod / VIP / subscriber (with months) / member / verified, mapped to one consistent badge system across every platform.
+- **Full emote support** — native emotes + **channel sub emotes** + **7TV / BTTV / FFZ** (Twitch) and **7TV** (Kick) third-party emotes + YouTube emojis, all rendered as images. Plus an **emote "pop"** effect in the overlay when chat spams.
 - **🔥 Hype Intelligence panel** (built for a trading audience):
   - Live **$ticker / cashtag** detection, highlighted inline + ranked leaderboard
   - **Bullish / bearish / neutral** sentiment meter
@@ -40,6 +41,7 @@ A standalone **Node ingestion server** connects to each platform, maps every mes
 | **Twitch** | Anonymous IRC over WebSocket via `tmi.js` | None — any public channel |
 | **Kick** | Unofficial Pusher WebSocket (`chatrooms.{id}.v2`); chatroom ID resolved via Kick's API with a **headless-browser fallback** for Cloudflare | None (read-only) |
 | **X / Twitter** | **Playwright** opens the live broadcast and **intercepts the `chatapi/v1/chatnow` WebSocket frames** — the same structured JSON the native client receives | Logged-in **burner** session (see below) |
+| **YouTube** *(bonus)* | Live chat via no-key **innertube** (`youtube-chat`) — messages, member/mod/owner badges, native emojis | None |
 
 > **Why Playwright for X?** X has no official live-chat API, and guest-token access was removed in 2023. Letting a logged-in browser do the auth and reading the chat *socket frames* (not the DOM) is the most robust path — immune to UI redesigns.
 
@@ -58,7 +60,7 @@ To connect **real** channels, enter a Twitch and/or Kick channel name, untick **
 Add a **Browser Source** in OBS pointing at:
 
 ```
-http://localhost:3000/overlay?twitch=<channel>&kick=<channel>&x=<broadcastId>&max=18
+http://localhost:3000/overlay?twitch=<channel>&kick=<channel>&youtube=<channelId>&x=<broadcastId>&max=18
 ```
 
 Transparent background, compact chips, source-colored, newest at the bottom. Use `?demo=1` to preview.

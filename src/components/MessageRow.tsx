@@ -67,6 +67,9 @@ function Row({ m }: { m: UnifiedMessage }) {
         <span className="text-zinc-500">: </span>
         <span className="break-words text-zinc-200">{renderBody(m)}</span>
       </div>
+      <span className="mt-0.5 shrink-0 self-start text-[10px] tabular-nums text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100">
+        {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+      </span>
     </div>
   );
 }

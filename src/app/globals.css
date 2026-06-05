@@ -13,6 +13,8 @@ body {
 
 body {
   @apply bg-ink-950 text-zinc-100 font-sans antialiased;
+  background-image: radial-gradient(1100px 520px at 50% -8%, rgba(145, 70, 255, 0.1), transparent 60%);
+  background-attachment: fixed;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -23,4 +25,27 @@ body {
 }
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Emote "pop" — big emote floats up when chat spams it (OBS overlay) */
+@keyframes emotePop {
+  0% {
+    transform: translateY(24px) scale(0.4);
+    opacity: 0;
+  }
+  18% {
+    transform: translateY(0) scale(1.2);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-150px) scale(1);
+    opacity: 0;
+  }
+}
+.emote-pop {
+  animation: emotePop 2.4s ease-out forwards;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
 }
