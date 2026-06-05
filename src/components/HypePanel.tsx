@@ -46,7 +46,7 @@ export function HypePanel({ messages, markets }: { messages: UnifiedMessage[]; m
     <div className="flex flex-col gap-3 p-3">
       <div className="flex items-center gap-2">
         <span className="text-sm font-bold">🔥 Hype Intelligence</span>
-        <span className="rounded bg-fuchsia-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-fuchsia-300">
+        <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-accent">
           live
         </span>
       </div>

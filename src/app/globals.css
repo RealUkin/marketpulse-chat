@@ -4,6 +4,11 @@
 
 :root {
   color-scheme: dark;
+  --accent: 139 92 246; /* themeable; overridden by the theme switcher */
+}
+
+::selection {
+  background: rgb(var(--accent) / 0.3);
 }
 
 html,

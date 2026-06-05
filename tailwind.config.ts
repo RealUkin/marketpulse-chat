@@ -5,6 +5,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Themeable accent (driven by --accent CSS var, supports /opacity)
+        accent: "rgb(var(--accent) / <alpha-value>)",
         // Per-platform brand accents (challenge spec)
         twitch: "#9146FF",
         kick: "#53FC18",

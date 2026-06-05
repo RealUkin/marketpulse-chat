@@ -16,7 +16,7 @@ export function ChatFeed({ messages, paused }: { messages: UnifiedMessage[]; pau
     <div ref={ref} className="scrollbar-thin h-full overflow-y-auto">
       {messages.length === 0 ? (
         <div className="flex h-full items-center justify-center px-6 text-center text-sm text-zinc-600">
-          No messages yet — Demo Mode is on by default, hit <span className="mx-1 text-fuchsia-400">Connect</span> to start the feed.
+          No messages yet — Demo Mode is on by default, hit <span className="mx-1 text-accent">Connect</span> to start the feed.
         </div>
       ) : (
         <div className="flex flex-col py-2">
