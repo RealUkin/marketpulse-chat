@@ -55,6 +55,13 @@ async function twitchGlobals(): Promise<EmoteMap> {
   return map;
 }
 
+// Flat list of real global emotes — used by Demo Mode so it shows varied, current
+// emotes (7TV/BTTV/FFZ) instead of a few hardcoded ones.
+export async function getGlobalEmoteList(): Promise<{ name: string; url: string }[]> {
+  const map = await twitchGlobals();
+  return Array.from(map.entries()).map(([name, url]) => ({ name, url }));
+}
+
 async function sevenGlobals(): Promise<EmoteMap> {
   if (globalSeven) return globalSeven;
   const map: EmoteMap = new Map();

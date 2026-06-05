@@ -3,6 +3,7 @@
 import type { BadgeInfo, MessageFlags, MessagePart, Platform, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
 import { TWITCH_EMOTE } from "../../shared/emotes";
+import { getGlobalEmoteList } from "../emoteRegistry";
 import type { Adapter, Emit, StatusFn } from "./types";
 
 const NAMES = [
@@ -73,6 +74,15 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
   status("twitch", "connected", "demo");
   status("kick", "connected", "demo");
   status("x", "connected", "demo");
+  status("youtube", "connected", "demo");
+
+  // Pull real global emotes (7TV/BTTV/FFZ) so the demo looks like real chat.
+  let pool: { name: string; url: string }[] = EMOTES;
+  getGlobalEmoteList()
+    .then((list) => {
+      if (list.length) pool = list;
+    })
+    .catch(() => {});
 
   const platforms: Platform[] = ["twitch", "kick", "x", "youtube"];
 
@@ -82,8 +92,8 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
     const text = pick(LINES[platform]);
     const { badges, flags } = makeBadges(platform);
     let parts: MessagePart[] | undefined;
-    if (Math.random() < 0.4) {
-      const e = pick(EMOTES);
+    if (Math.random() < 0.5) {
+      const e = pick(pool);
       parts = [
         { t: "text", v: `${text} ` },
         { t: "emote", name: e.name, url: e.url },
