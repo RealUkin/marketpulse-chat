@@ -27,6 +27,11 @@ const LINES: Record<Platform, string[]> = {
     "Ansem cooking again", "what are the odds on $SOL hitting 200?", "gm degens",
     "Polymarket has this at 62% rn", "is this open source?", "LFG", "bullish", "real",
   ],
+  youtube: [
+    "first!", "W stream", "is $ETH a buy here?", "member emotes go hard",
+    "polymarket odds looking spicy", "gm from youtube", "$BTC to 100k EOY 🚀",
+    "notification squad where you at", "best multistream tool fr", "🎉🎉",
+  ],
 };
 
 const COLORS = ["#9146FF", "#53FC18", "#1d9bf0", "#e3b341", "#22c55e", "#ef4444", "#f472b6", "#38bdf8"];
@@ -47,6 +52,11 @@ function makeBadges(platform: Platform): { badges: BadgeInfo[]; flags: MessageFl
   const r = Math.random();
   if (platform === "x") {
     if (r < 0.5) { badges.push({ type: "verified", label: "Verified" }); flags.verified = true; }
+  } else if (platform === "youtube") {
+    if (r < 0.05) { badges.push({ type: "broadcaster", label: "Host" }); flags.broadcaster = true; }
+    else if (r < 0.16) { badges.push({ type: "moderator", label: "Mod" }); flags.moderator = true; }
+    if (Math.random() < 0.45) { badges.push({ type: "member", label: "Member" }); flags.subscriber = true; }
+    if (Math.random() < 0.25) { badges.push({ type: "verified", label: "Verified" }); flags.verified = true; }
   } else {
     if (r < 0.06) { badges.push({ type: "broadcaster", label: "Host" }); flags.broadcaster = true; }
     else if (r < 0.18) { badges.push({ type: "moderator", label: "Mod" }); flags.moderator = true; }
@@ -64,7 +74,7 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
   status("kick", "connected", "demo");
   status("x", "connected", "demo");
 
-  const platforms: Platform[] = ["twitch", "kick", "x"];
+  const platforms: Platform[] = ["twitch", "kick", "x", "youtube"];
 
   const fire = () => {
     const platform = pick(platforms);

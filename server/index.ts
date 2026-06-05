@@ -7,6 +7,7 @@ import { createDemoAdapter } from "./adapters/demo";
 import { createTwitchAdapter } from "./adapters/twitch";
 import { createKickAdapter } from "./adapters/kick";
 import { createXAdapter } from "./adapters/x";
+import { createYouTubeAdapter } from "./adapters/youtube";
 import type { Adapter } from "./adapters/types";
 import { fetchMarkets } from "./polymarket";
 
@@ -50,6 +51,7 @@ class Session {
     if (channels.twitch) this.adapters.push(createTwitchAdapter(channels.twitch, this.emit, this.status));
     if (channels.kick) this.adapters.push(createKickAdapter(channels.kick, this.emit, this.status));
     if (channels.x) this.adapters.push(createXAdapter(channels.x, this.emit, this.status));
+    if (channels.youtube) this.adapters.push(createYouTubeAdapter(channels.youtube, this.emit, this.status));
   }
 
   stopAll() {

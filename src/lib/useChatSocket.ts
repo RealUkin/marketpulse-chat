@@ -15,7 +15,7 @@ const MAX_MESSAGES = 250;
 export type StatusMap = Record<Platform, ConnectionState | "idle">;
 export type SocketState = "connecting" | "open" | "closed";
 
-const IDLE_STATUS: StatusMap = { twitch: "idle", kick: "idle", x: "idle" };
+const IDLE_STATUS: StatusMap = { twitch: "idle", kick: "idle", x: "idle", youtube: "idle" };
 
 export function useChatSocket() {
   const [messages, setMessages] = useState<UnifiedMessage[]>([]);
@@ -100,6 +100,7 @@ export function useChatSocket() {
       twitch: demo || channels.twitch ? "connecting" : "idle",
       kick: demo || channels.kick ? "connecting" : "idle",
       x: demo || channels.x ? "connecting" : "idle",
+      youtube: demo || channels.youtube ? "connecting" : "idle",
     });
     const ws = wsRef.current;
     if (ws && ws.readyState === WebSocket.OPEN) {

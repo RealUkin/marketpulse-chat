@@ -6,13 +6,14 @@ import { PLATFORM_META } from "@/lib/platform";
 import { ChatFeed } from "@/components/ChatFeed";
 import { HypePanel } from "@/components/HypePanel";
 
-const ALL: Platform[] = ["twitch", "kick", "x"];
+const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
 export default function Dashboard() {
   const { messages, socketState, status, markets, subscribe, setPaused, clear } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
+  const [youtube, setYoutube] = useState("");
   const [demo, setDemo] = useState(true);
   const [filters, setFilters] = useState<Set<Platform>>(new Set(ALL));
   const [search, setSearch] = useState("");
@@ -47,6 +48,7 @@ export default function Dashboard() {
         twitch: twitch.trim() || undefined,
         kick: kick.trim() || undefined,
         x: x.trim() || undefined,
+        youtube: youtube.trim() || undefined,
       },
       demo,
     );
@@ -83,7 +85,8 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-center gap-2 border-b border-ink-800 bg-ink-900 px-5 py-2.5 text-sm">
         <ChannelInput value={twitch} onChange={setTwitch} placeholder="twitch channel" accent="#9146FF" />
         <ChannelInput value={kick} onChange={setKick} placeholder="kick channel" accent="#53FC18" />
-        <ChannelInput value={x} onChange={setX} placeholder="x broadcast (Day 2)" accent="#666" />
+        <ChannelInput value={youtube} onChange={setYoutube} placeholder="youtube id/url" accent="#FF0033" />
+        <ChannelInput value={x} onChange={setX} placeholder="x broadcast url/id" accent="#E7E9EA" />
         <label className="flex cursor-pointer select-none items-center gap-1.5 rounded-md bg-ink-800 px-2.5 py-1.5">
           <input
             type="checkbox"

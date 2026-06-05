@@ -44,7 +44,7 @@ const OverlayRow = memo(function OverlayRow({ m }: { m: UnifiedMessage }) {
     >
       <span
         className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[11px] font-bold"
-        style={{ backgroundColor: meta.color, color: m.platform === "x" ? "#000" : "#0b0b0b" }}
+        style={{ backgroundColor: meta.color, color: meta.fg }}
       >
         {meta.letter}
       </span>

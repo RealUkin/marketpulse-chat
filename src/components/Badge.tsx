@@ -6,6 +6,7 @@ const STYLES: Record<string, string> = {
   moderator: "bg-green-500/20 text-green-300 ring-green-500/40",
   vip: "bg-pink-500/20 text-pink-300 ring-pink-500/40",
   subscriber: "bg-indigo-500/20 text-indigo-300 ring-indigo-500/40",
+  member: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/40",
   verified: "bg-sky-500/20 text-sky-300 ring-sky-500/40",
   sub_gifter: "bg-amber-500/20 text-amber-300 ring-amber-500/40",
   founder: "bg-amber-500/20 text-amber-200 ring-amber-500/40",

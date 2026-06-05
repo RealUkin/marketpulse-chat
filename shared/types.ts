@@ -1,6 +1,6 @@
 // Shared between the Node ingestion server and the Next.js client.
 
-export type Platform = "twitch" | "kick" | "x";
+export type Platform = "twitch" | "kick" | "x" | "youtube";
 
 export type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
 
@@ -9,6 +9,7 @@ export type BadgeType =
   | "moderator"
   | "vip"
   | "subscriber"
+  | "member"
   | "verified"
   | "sub_gifter"
   | "founder"
@@ -63,6 +64,7 @@ export interface ChannelConfig {
   twitch?: string;
   kick?: string;
   x?: string;
+  youtube?: string;
 }
 
 // Client -> Server
