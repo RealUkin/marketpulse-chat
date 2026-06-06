@@ -10,6 +10,7 @@ import { createXAdapter } from "./adapters/x";
 import { createYouTubeAdapter } from "./adapters/youtube";
 import type { Adapter } from "./adapters/types";
 import { fetchMarkets } from "./polymarket";
+import { sendTwitchMessage } from "./send";
 
 const PORT = Number(process.env.WS_PORT ?? 3001);
 
@@ -92,6 +93,19 @@ wss.on("connection", (ws) => {
     if (cmd.type === "subscribe") session.start(cmd.channels, cmd.demo);
     else if (cmd.type === "feature") broadcast({ type: "featured", data: cmd.data });
     else if (cmd.type === "unfeature") broadcast({ type: "featured", data: null });
+    else if (cmd.type === "send") {
+      // Reply only to the requesting client (never broadcast a token result).
+      const reply = (ev: ServerEvent) => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(ev));
+      };
+      if (cmd.platform === "twitch") {
+        sendTwitchMessage({ channel: cmd.channel, text: cmd.text, token: cmd.token, login: cmd.login })
+          .then(() => reply({ type: "sendResult", ok: true }))
+          .catch((e) => reply({ type: "sendResult", ok: false, error: String(e?.message ?? e) }));
+      } else {
+        reply({ type: "sendResult", ok: false, error: `Replying to ${cmd.platform} isn't supported yet` });
+      }
+    }
   });
 
   ws.on("close", () => session.stopAll());

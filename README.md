@@ -23,6 +23,7 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
 - **🛡️ Crypto scam/link defense** — flags phishing links, wallet/contract addresses, and scam phrases (free-nitro, "double your", airdrop / connect-wallet) with a ⚠ marker + a Safety panel. Nobody else protects crypto chats.
 - **🎛️ Connect-platforms modal** — toggle each platform on/off and add your channel (your multistream picker). No login needed to read chat — the key edge over Restream.
 - **⭐ Feature-on-stream** — star any message to broadcast it as a large featured banner on the OBS overlay.
+- **💬 Reply from the app** — sign in with Twitch (your token stays in *your* browser) and post to your chat without leaving the command center.
 - **Creator controls** — per-platform filters, search, keyword/@mention highlight, sound-on-new-message, pause/clear, and a 5-preset accent **theme switcher**.
 - **🎥 OBS overlay mode** — a transparent `/overlay` route (browser source) with emote "pop" + the featured banner.
 - **🧪 Demo Mode** — realistic synthetic chat across all four platforms, so the app works **instantly with zero API keys** (and never breaks on camera).
@@ -80,12 +81,27 @@ npm run x:login      # opens a browser — log into your burner, press Enter to 
 
 Then enter the broadcast URL (or ID) in the **X** field and Connect. `x-auth.json` is gitignored and never committed.
 
+## 💬 Reply from the app (Twitch sign-in)
+
+Reading chat needs **no login**. To *reply* to your Twitch chat from inside the app, sign in with your own Twitch account — a 2-minute, one-time setup:
+
+1. Go to the [Twitch Developer Console](https://dev.twitch.tv/console/apps) → **Register Your Application**.
+2. Set **OAuth Redirect URL** to exactly `http://localhost:3000`, category *Application Integration*.
+3. Copy the **Client ID** and put it in a local `.env.local` file (see [`.env.example`](.env.example)):
+   ```
+   NEXT_PUBLIC_TWITCH_CLIENT_ID=your_client_id_here
+   ```
+4. Restart `npm run dev`, then click **Sign in with Twitch** under the feed and authorize.
+
+Your access token is stored only in your browser's `localStorage` and sent only to your local ingestion server to post the message. It is **never committed** and there is no client secret. Scopes requested: `chat:read chat:edit` (read + post as you).
+
 ## ⚙️ Environment variables
 
 | Var | Purpose |
 |---|---|
 | `WS_PORT` | Ingestion server port (default `3001`) |
 | `NEXT_PUBLIC_WS_URL` | WS URL the client connects to (default `ws://localhost:3001`) |
+| `NEXT_PUBLIC_TWITCH_CLIENT_ID` | Twitch app Client ID — enables **Sign in with Twitch** to reply (read-only works without it) |
 | `X_HEADLESS=1` | Run the X browser headless (default headful; X flags headless) |
 | `KICK_CHATROOM_<SLUG>` | Hardcode a Kick chatroom ID for guaranteed demo reliability |
 

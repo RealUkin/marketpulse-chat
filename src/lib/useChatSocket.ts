@@ -23,6 +23,7 @@ export function useChatSocket() {
   const [status, setStatus] = useState<StatusMap>(IDLE_STATUS);
   const [markets, setMarkets] = useState<MarketInfo[]>([]);
   const [featured, setFeatured] = useState<UnifiedMessage | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
@@ -69,6 +70,7 @@ export function useChatSocket() {
       else if (ev.type === "status") setStatus((s) => ({ ...s, [ev.platform]: ev.state }));
       else if (ev.type === "markets") setMarkets(ev.data);
       else if (ev.type === "featured") setFeatured(ev.data);
+      else if (ev.type === "sendResult") setSendError(ev.ok ? null : ev.error ?? "Send failed");
     };
 
     ws.onerror = () => ws.close();
@@ -130,5 +132,29 @@ export function useChatSocket() {
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "unfeature" }));
   }, []);
 
-  return { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature };
+  const sendMessage = useCallback(
+    (platform: Platform, channel: string, text: string, token: string, login: string) => {
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        setSendError(null);
+        ws.send(JSON.stringify({ type: "send", platform, channel, text, token, login }));
+      }
+    },
+    [],
+  );
+
+  return {
+    messages,
+    socketState,
+    status,
+    markets,
+    featured,
+    subscribe,
+    setPaused,
+    clear,
+    feature,
+    unfeature,
+    sendMessage,
+    sendError,
+  };
 }

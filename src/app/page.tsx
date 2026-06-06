@@ -6,6 +6,8 @@ import { PLATFORM_META } from "@/lib/platform";
 import { ChatFeed } from "@/components/ChatFeed";
 import { HypePanel } from "@/components/HypePanel";
 import { ConnectModal } from "@/components/ConnectModal";
+import { Composer } from "@/components/Composer";
+import { consumeTwitchRedirect, getStoredTwitchAuth, type TwitchAuth } from "@/lib/twitchAuth";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -18,7 +20,7 @@ const THEMES = [
 ];
 
 export default function Dashboard() {
-  const { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature } = useChatSocket();
+  const { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
@@ -32,6 +34,7 @@ export default function Dashboard() {
   const [connectOpen, setConnectOpen] = useState(false);
   const [highlight, setHighlight] = useState("");
   const [soundOn, setSoundOn] = useState(false);
+  const [auth, setAuth] = useState<TwitchAuth | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const lastBeepRef = useRef(0);
   const prevLenRef = useRef(0);
@@ -39,6 +42,10 @@ export default function Dashboard() {
   useEffect(() => {
     const saved = Number(window.localStorage.getItem("mp-theme"));
     if (!Number.isNaN(saved) && THEMES[saved]) setThemeIdx(saved);
+  }, []);
+  // Twitch sign-in: handle the OAuth redirect on load, else restore a saved session.
+  useEffect(() => {
+    consumeTwitchRedirect().then((a) => setAuth(a ?? getStoredTwitchAuth()));
   }, []);
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", THEMES[themeIdx].rgb);
@@ -317,6 +324,14 @@ export default function Dashboard() {
           <div className="min-h-0 flex-1 border-t border-white/5">
             <ChatFeed messages={filtered} paused={paused} highlight={highlightList} onFeature={handleFeature} />
           </div>
+          <Composer
+            channel={twitch.trim() || undefined}
+            demo={demo}
+            auth={auth}
+            onSignOut={() => setAuth(null)}
+            onSend={(t) => auth && sendMessage("twitch", twitch.trim(), t, auth.token, auth.login)}
+            sendError={sendError}
+          />
         </section>
         {showHype && (
           <aside className="scrollbar-thin hidden w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-ink-900/40 lg:block">

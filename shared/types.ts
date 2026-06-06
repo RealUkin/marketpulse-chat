@@ -81,6 +81,7 @@ export type ClientCommand =
   | { type: "subscribe"; channels: ChannelConfig; demo: boolean }
   | { type: "feature"; data: UnifiedMessage }
   | { type: "unfeature" }
+  | { type: "send"; platform: Platform; channel: string; text: string; token: string; login: string }
   | { type: "ping" };
 
 export interface MarketInfo {
@@ -98,4 +99,5 @@ export type ServerEvent =
   | { type: "message"; data: UnifiedMessage }
   | { type: "status"; platform: Platform; state: ConnectionState; detail?: string }
   | { type: "markets"; data: MarketInfo[] }
-  | { type: "featured"; data: UnifiedMessage | null };
+  | { type: "featured"; data: UnifiedMessage | null }
+  | { type: "sendResult"; ok: boolean; error?: string };
