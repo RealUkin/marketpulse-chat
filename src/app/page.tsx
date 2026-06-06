@@ -10,6 +10,7 @@ import { Composer } from "@/components/Composer";
 import { consumeTwitchRedirect, getStoredTwitchAuth, twitchClientId, type TwitchAuth } from "@/lib/twitchAuth";
 import { isBot } from "@/lib/bots";
 import { downloadMomentCard } from "@/lib/momentCard";
+import { detectScamWave, type ScamWave } from "@shared/scamWave";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -38,6 +39,8 @@ export default function Dashboard() {
   const [soundOn, setSoundOn] = useState(false);
   const [ttsOn, setTtsOn] = useState(false);
   const [hideBots, setHideBots] = useState(false);
+  const [waveDismissed, setWaveDismissed] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<UnifiedMessage[]>([]);
   const [auth, setAuth] = useState<TwitchAuth | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const lastBeepRef = useRef(0);
@@ -77,6 +80,16 @@ export default function Dashboard() {
     const now = Date.now();
     return messages.filter((m) => now - m.timestamp < 15000).length >= 12;
   }, [messages]);
+
+  // Coordinated scam-wave detector (many accounts, same message).
+  const scamWave = useMemo(() => detectScamWave(messages, Date.now()), [messages]);
+
+  const pinnedIds = useMemo(() => new Set(pinned.map((m) => m.id)), [pinned]);
+  const handlePin = useCallback((m: UnifiedMessage) => {
+    setPinned((prev) =>
+      prev.some((p) => p.id === m.id) ? prev.filter((p) => p.id !== m.id) : [...prev, m].slice(-3),
+    );
+  }, []);
 
   // Sound on new message (throttled), opt-in.
   useEffect(() => {
@@ -216,6 +229,28 @@ export default function Dashboard() {
         token: auth.token,
         clientId: twitchClientId(),
       });
+    },
+    [auth, moderate],
+  );
+
+  const banWave = useCallback(
+    (w: ScamWave) => {
+      if (auth) {
+        const seen = new Set<string>();
+        for (const m of w.messages) {
+          if (m.platform !== "twitch" || !m.authorId || !m.channelId || seen.has(m.authorId)) continue;
+          seen.add(m.authorId);
+          moderate({
+            action: "ban",
+            broadcasterId: m.channelId,
+            moderatorId: auth.userId,
+            targetUserId: m.authorId,
+            token: auth.token,
+            clientId: twitchClientId(),
+          });
+        }
+      }
+      setWaveDismissed(w.text);
     },
     [auth, moderate],
   );
@@ -401,6 +436,30 @@ export default function Dashboard() {
       {/* Body */}
       <div className="flex min-h-0 flex-1">
         <section className="flex min-w-0 flex-1 flex-col">
+          {scamWave && scamWave.text !== waveDismissed && (
+            <div className="flex items-center gap-2 border-b border-red-500/40 bg-red-950/50 px-4 py-2 text-[12px]">
+              <span className="shrink-0 font-bold text-red-300">⚠ Scam wave</span>
+              <span className="truncate text-red-100/80">
+                {scamWave.count} accounts posting the same message: “{scamWave.text}”
+              </span>
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                {auth && scamWave.messages.some((m) => m.platform === "twitch") && (
+                  <button
+                    onClick={() => banWave(scamWave)}
+                    className="rounded bg-red-600 px-2 py-0.5 font-semibold text-white transition hover:bg-red-500"
+                  >
+                    Ban wave (Twitch)
+                  </button>
+                )}
+                <button
+                  onClick={() => setWaveDismissed(scamWave.text)}
+                  className="text-zinc-400 transition hover:text-zinc-200"
+                >
+                  dismiss ✕
+                </button>
+              </div>
+            </div>
+          )}
           {featured && (
             <div className="flex items-center gap-2 border-b border-accent/30 bg-accent/10 px-4 py-1.5 text-[12px]">
               <span className="shrink-0 font-semibold text-accent">★ Featured on stream</span>
@@ -421,6 +480,28 @@ export default function Dashboard() {
               {socketState}
             </span>
           </div>
+          {pinned.length > 0 && (
+            <div className="flex flex-col gap-1 border-t border-accent/20 bg-accent/[0.06] px-3 py-2">
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-accent">
+                📌 Pinned
+              </div>
+              {pinned.map((m) => (
+                <div key={m.id} className="flex items-center gap-2 text-[12px]">
+                  <span className="shrink-0 font-semibold" style={{ color: m.color ?? undefined }}>
+                    {m.displayName}
+                  </span>
+                  <span className="truncate text-zinc-300">{m.text}</span>
+                  <button
+                    onClick={() => setPinned((prev) => prev.filter((p) => p.id !== m.id))}
+                    title="Unpin"
+                    className="ml-auto shrink-0 text-zinc-500 transition hover:text-zinc-300"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="min-h-0 flex-1 border-t border-white/5">
             <ChatFeed
               messages={filtered}
@@ -429,6 +510,8 @@ export default function Dashboard() {
               onFeature={handleFeature}
               canModerate={!!auth}
               onModerate={handleModerate}
+              pinnedIds={pinnedIds}
+              onPin={handlePin}
             />
           </div>
           <Composer

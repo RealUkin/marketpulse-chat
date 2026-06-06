@@ -169,5 +169,43 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
     for (let i = 0; i < n; i++) setTimeout(fire, Math.random() * 450);
   }, 850);
 
-  return { stop: () => clearInterval(interval) };
+  // Occasionally simulate a coordinated scam WAVE (the real raid pattern):
+  // the same line from many distinct accounts at once → the wave detector fires.
+  const triggerWave = () => {
+    const line = pick(SCAM_LINES);
+    const platform = pick(platforms);
+    const n = 5 + Math.floor(Math.random() * 3); // 5–7 accounts
+    for (let i = 0; i < n; i++) {
+      setTimeout(() => {
+        const name = `${pick(NAMES)}_${10 + Math.floor(Math.random() * 89)}`;
+        const flags: MessageFlags = {
+          broadcaster: false, moderator: false, vip: false, subscriber: false, verified: false,
+        };
+        const msg: UnifiedMessage = {
+          id: `demo_wave_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          platform,
+          channel: "demo",
+          username: name,
+          displayName: name,
+          color: pick(COLORS),
+          text: line,
+          timestamp: Date.now(),
+          badges: [],
+          flags,
+        };
+        msg.intelligence = analyze(line, flags);
+        emit(msg);
+      }, i * 220);
+    }
+  };
+  const firstWave = setTimeout(triggerWave, 9000);
+  const waveTimer = setInterval(triggerWave, 38000);
+
+  return {
+    stop: () => {
+      clearInterval(interval);
+      clearTimeout(firstWave);
+      clearInterval(waveTimer);
+    },
+  };
 }

@@ -45,12 +45,16 @@ function Row({
   onFeature,
   canModerate,
   onModerate,
+  pinned,
+  onPin,
 }: {
   m: UnifiedMessage;
   highlight: string[];
   onFeature?: (m: UnifiedMessage) => void;
   canModerate?: boolean;
   onModerate?: (action: "delete" | "timeout" | "ban", m: UnifiedMessage) => void;
+  pinned?: boolean;
+  onPin?: (m: UnifiedMessage) => void;
 }) {
   if (m.event) return <EventRow m={m} />;
   const meta = PLATFORM_META[m.platform];
@@ -64,7 +68,7 @@ function Row({
     <div
       className={`group flex items-start gap-3 px-4 py-1.5 transition-colors animate-slide-in hover:bg-white/[0.035] ${
         scam ? "bg-red-950/30" : hit ? "bg-accent/[0.08] ring-1 ring-inset ring-accent/25" : ""
-      }`}
+      } ${pinned ? "opacity-40" : ""}`}
     >
       {/* Avatar with platform badge */}
       <div className="relative mt-0.5 shrink-0">
@@ -146,6 +150,17 @@ function Row({
               className="shrink-0 pl-1 text-xs text-zinc-600 opacity-0 transition hover:text-accent group-hover:opacity-100"
             >
               ★
+            </button>
+          )}
+          {onPin && (
+            <button
+              onClick={() => onPin(m)}
+              title={pinned ? "Unpin" : "Pin to top"}
+              className={`shrink-0 pl-1 text-xs transition hover:text-accent ${
+                pinned ? "text-accent opacity-100" : "text-zinc-600 opacity-0 group-hover:opacity-100"
+              }`}
+            >
+              📌
             </button>
           )}
         </div>
