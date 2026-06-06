@@ -112,6 +112,13 @@ src/components/    ChatFeed · MessageRow · Badge · HypePanel
 src/lib/           useChatSocket (WS client) · platform meta
 ```
 
+## 🔒 Security & privacy
+
+- **No credentials in this repo.** Reading chat needs no login (Twitch / Kick / YouTube are read anonymously), so nothing sensitive is ever committed.
+- **Your X session stays local.** `npm run x:login` saves a *burner* session to `x-auth.json`, which is **gitignored and never committed** — clone the repo and you'll find no trace of anyone's account.
+- **Account tokens (future OAuth)** live only in local, gitignored files (`.env.local` / `.auth/`); the app reads them at runtime and they never enter git history.
+- Chat messages are **sanitized before render** (no raw HTML injection), and the ingestion server only relays chat/feature events — it persists nothing.
+
 ## ⚠️ Notes
 
 The Kick (Pusher) and X (broadcast chat) integrations use unofficial/undocumented endpoints and are intended for personal/educational use. Demo Mode requires nothing and always works.
