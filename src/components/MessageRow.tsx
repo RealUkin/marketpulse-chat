@@ -1,5 +1,5 @@
 import { memo, type ReactNode } from "react";
-import type { UnifiedMessage } from "@shared/types";
+import type { EventInfo, UnifiedMessage } from "@shared/types";
 import { PLATFORM_META } from "@/lib/platform";
 import { Badge } from "@/components/Badge";
 
@@ -48,6 +48,7 @@ function Row({
   highlight: string[];
   onFeature?: (m: UnifiedMessage) => void;
 }) {
+  if (m.event) return <EventRow m={m} />;
   const meta = PLATFORM_META[m.platform];
   const scam = m.intelligence?.risk === "scam";
   const userColor = m.color ?? meta.color;
@@ -130,3 +131,34 @@ function Row({
 }
 
 export const MessageRow = memo(Row);
+
+const EVENT_STYLE: Record<EventInfo["kind"], { icon: string; cls: string }> = {
+  sub: { icon: "🎉", cls: "from-fuchsia-600/25 to-purple-600/10 text-fuchsia-200 ring-fuchsia-500/40" },
+  resub: { icon: "🎉", cls: "from-fuchsia-600/25 to-purple-600/10 text-fuchsia-200 ring-fuchsia-500/40" },
+  giftsub: { icon: "🎁", cls: "from-pink-600/25 to-rose-600/10 text-pink-200 ring-pink-500/40" },
+  bits: { icon: "💎", cls: "from-cyan-600/25 to-sky-600/10 text-cyan-200 ring-cyan-500/40" },
+  superchat: { icon: "💵", cls: "from-emerald-600/25 to-green-600/10 text-emerald-200 ring-emerald-500/40" },
+  raid: { icon: "🚀", cls: "from-orange-600/25 to-amber-600/10 text-orange-200 ring-orange-500/40" },
+  member: { icon: "⭐", cls: "from-emerald-600/25 to-green-600/10 text-emerald-200 ring-emerald-500/40" },
+  follow: { icon: "➕", cls: "from-zinc-600/25 to-zinc-600/10 text-zinc-200 ring-zinc-500/40" },
+};
+
+function EventRow({ m }: { m: UnifiedMessage }) {
+  const meta = PLATFORM_META[m.platform];
+  const ev = m.event!;
+  const s = EVENT_STYLE[ev.kind] ?? EVENT_STYLE.sub;
+  return (
+    <div className={`mx-2 my-1 flex animate-slide-in items-center gap-2.5 rounded-lg bg-gradient-to-r px-3 py-2 ring-1 ${s.cls}`}>
+      <span className="text-lg leading-none">{s.icon}</span>
+      <span
+        className="grid h-4 w-4 shrink-0 place-items-center rounded text-[8px] font-black"
+        style={{ backgroundColor: meta.color, color: meta.fg }}
+        title={meta.label}
+      >
+        {meta.letter.slice(0, 1)}
+      </span>
+      <span className="font-bold text-white">{m.displayName}</span>
+      <span className="font-semibold">{ev.label}</span>
+    </div>
+  );
+}

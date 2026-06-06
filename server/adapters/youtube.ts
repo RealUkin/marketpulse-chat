@@ -73,6 +73,9 @@ export function createYouTubeAdapter(input: string, emit: Emit, status: StatusFn
       badges,
       flags,
       parts: parts.length ? parts : undefined,
+      event: item.superchat
+        ? { kind: "superchat", label: `Super Chat ${item.superchat.amount}${text ? ` — ${text}` : ""}` }
+        : undefined,
     };
     msg.intelligence = analyze(text, flags);
     emit(msg);

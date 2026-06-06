@@ -41,6 +41,13 @@ export interface Intelligence {
   risk: "none" | "link" | "scam"; // crypto-grade scam/link flag for moderators
 }
 
+// Sub / gift / bits / raid / superchat alert that "pops" in the feed + overlay.
+export interface EventInfo {
+  kind: "sub" | "resub" | "giftsub" | "bits" | "raid" | "superchat" | "member" | "follow";
+  label: string;
+  amount?: number;
+}
+
 export type MessagePart =
   | { t: "text"; v: string }
   | { t: "emote"; name: string; url: string };
@@ -59,6 +66,7 @@ export interface UnifiedMessage {
   flags: MessageFlags;
   parts?: MessagePart[]; // pre-tokenized text + emote images for rendering
   intelligence?: Intelligence;
+  event?: EventInfo; // sub / gift / bits / raid / superchat alert
 }
 
 export interface ChannelConfig {

@@ -1,7 +1,7 @@
 // Kick adapter — unofficial Pusher WebSocket (the same one kick.com uses).
 // No auth needed to READ a public chatroom.
 import WebSocket from "ws";
-import type { BadgeInfo, MessageFlags, UnifiedMessage } from "../../shared/types";
+import type { BadgeInfo, EventInfo, MessageFlags, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
 import { kickParts, cleanKickText, expandWordEmotes } from "../../shared/emotes";
 import type { Adapter, Emit, StatusFn } from "./types";
@@ -71,6 +71,21 @@ export function createKickAdapter(slug: string, emit: Emit, status: StatusFn): A
   let emoteMap: Map<string, string> | null = null;
   status("kick", "connecting");
 
+  const emitKickEvent = (username: string, ev: EventInfo) => {
+    emit({
+      id: `kick_ev_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      platform: "kick",
+      channel: clean,
+      username,
+      displayName: username,
+      text: ev.label,
+      timestamp: Date.now(),
+      badges: [],
+      flags: { broadcaster: false, moderator: false, vip: false, subscriber: ev.kind !== "raid", verified: false },
+      event: ev,
+    });
+  };
+
   (async () => {
     const ch = await resolveKickChannel(clean);
     if (stopped) return;
@@ -97,6 +112,25 @@ export function createKickAdapter(slug: string, emit: Emit, status: StatusFn): A
       try {
         frame = JSON.parse(raw.toString());
       } catch {
+        return;
+      }
+      // Sub / gift events (unofficial Pusher event names; defensive parsing).
+      if (frame.event === "App\\Events\\SubscriptionEvent" || frame.event === "App\\Events\\GiftedSubscriptionsEvent") {
+        try {
+          const d = JSON.parse(frame.data);
+          if (frame.event.includes("Gifted")) {
+            const n = Array.isArray(d.gifted_usernames) ? d.gifted_usernames.length : d.gifted_count || 1;
+            emitKickEvent(d.gifter_username || "someone", { kind: "giftsub", label: `gifted ${n} subs!`, amount: n });
+          } else {
+            emitKickEvent(d.username || "someone", {
+              kind: "sub",
+              label: `subscribed for ${d.months || 1} months!`,
+              amount: d.months,
+            });
+          }
+        } catch {
+          /* ignore malformed event */
+        }
         return;
       }
       if (frame.event !== "App\\Events\\ChatMessageEvent") return;

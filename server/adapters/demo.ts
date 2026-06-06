@@ -1,6 +1,6 @@
 // Demo adapter — realistic synthetic chat across all 3 platforms.
 // This is the always-on failsafe so the app works instantly with zero API setup.
-import type { BadgeInfo, MessageFlags, MessagePart, Platform, UnifiedMessage } from "../../shared/types";
+import type { BadgeInfo, EventInfo, MessageFlags, MessagePart, Platform, UnifiedMessage } from "../../shared/types";
 import { analyze } from "../../shared/intelligence";
 import { TWITCH_EMOTE } from "../../shared/emotes";
 import { getGlobalEmoteList } from "../emoteRegistry";
@@ -53,6 +53,15 @@ const SCAM_LINES = [
 
 const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)];
 
+const EVENT_KINDS: (() => EventInfo)[] = [
+  () => ({ kind: "sub", label: "just subscribed!" }),
+  () => ({ kind: "resub", label: `resubscribed for ${1 + Math.floor(Math.random() * 30)} months!` }),
+  () => ({ kind: "giftsub", label: `gifted ${1 + Math.floor(Math.random() * 20)} subs!` }),
+  () => ({ kind: "bits", label: `cheered ${pick([100, 500, 1000, 5000])} bits!` }),
+  () => ({ kind: "superchat", label: `Super Chat $${pick([2, 5, 10, 20, 50])}` }),
+  () => ({ kind: "raid", label: `raided with ${50 + Math.floor(Math.random() * 2000)} viewers!` }),
+];
+
 function makeBadges(platform: Platform): { badges: BadgeInfo[]; flags: MessageFlags } {
   const badges: BadgeInfo[] = [];
   const flags: MessageFlags = {
@@ -97,6 +106,35 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
   const fire = () => {
     const platform = pick(platforms);
     const name = pick(NAMES);
+
+    // ~7% of demo activity is a sub/gift/bits/raid/superchat event.
+    if (Math.random() < 0.07) {
+      const ev = pick(EVENT_KINDS)();
+      const flags: MessageFlags = {
+        broadcaster: false,
+        moderator: false,
+        vip: false,
+        subscriber: ev.kind !== "raid",
+        verified: false,
+      };
+      const evMsg: UnifiedMessage = {
+        id: `demo_ev_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        platform,
+        channel: "demo",
+        username: name,
+        displayName: name,
+        color: pick(COLORS),
+        text: ev.label,
+        timestamp: Date.now(),
+        badges: [],
+        flags,
+        event: ev,
+      };
+      evMsg.intelligence = analyze(ev.label, flags);
+      emit(evMsg);
+      return;
+    }
+
     let text = pick(LINES[platform]);
     if (Math.random() < 0.08) text = pick(SCAM_LINES);
     const { badges, flags } = makeBadges(platform);

@@ -117,6 +117,26 @@ export default function Overlay() {
 
 const OverlayRow = memo(function OverlayRow({ m }: { m: UnifiedMessage }) {
   const meta = PLATFORM_META[m.platform];
+  if (m.event) {
+    const icon =
+      ({ sub: "🎉", resub: "🎉", giftsub: "🎁", bits: "💎", superchat: "💵", raid: "🚀", member: "⭐", follow: "➕" } as Record<string, string>)[
+        m.event.kind
+      ] ?? "🎉";
+    return (
+      <div
+        className="flex animate-slide-in items-center gap-2 rounded-lg bg-black/70 px-3 py-2 text-[15px] backdrop-blur-sm"
+        style={{ boxShadow: `inset 3px 0 0 ${meta.color}` }}
+      >
+        <span className="text-xl">{icon}</span>
+        <span className="font-extrabold text-white" style={{ textShadow: "0 1px 2px rgba(0,0,0,.85)" }}>
+          {m.displayName}
+        </span>
+        <span className="font-bold text-white" style={{ textShadow: "0 1px 2px rgba(0,0,0,.85)" }}>
+          {m.event.label}
+        </span>
+      </div>
+    );
+  }
   return (
     <div
       className="flex animate-slide-in items-start gap-2 rounded-lg bg-black/55 px-2.5 py-1.5 text-[15px] leading-snug backdrop-blur-sm"
