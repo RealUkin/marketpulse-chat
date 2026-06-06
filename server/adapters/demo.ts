@@ -136,7 +136,7 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
     }
 
     let text = pick(LINES[platform]);
-    if (Math.random() < 0.08) text = pick(SCAM_LINES);
+    if (Math.random() < 0.04) text = pick(SCAM_LINES);
     const { badges, flags } = makeBadges(platform);
     let parts: MessagePart[] | undefined;
     if (Math.random() < 0.5) {
@@ -198,8 +198,8 @@ export function createDemoAdapter(emit: Emit, status: StatusFn): Adapter {
       }, i * 220);
     }
   };
-  const firstWave = setTimeout(triggerWave, 9000);
-  const waveTimer = setInterval(triggerWave, 38000);
+  const firstWave = setTimeout(triggerWave, 12000);
+  const waveTimer = setInterval(triggerWave, 70000);
 
   return {
     stop: () => {

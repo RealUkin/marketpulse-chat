@@ -23,7 +23,7 @@ const THEMES = [
 ];
 
 export default function Dashboard() {
-  const { messages, socketState, status, markets, prices, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult, aiEnabled, requestRecap, recapState, clearRecap, translations, requestTranslate } = useChatSocket();
+  const { messages, totalCount, socketState, status, markets, prices, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult, aiEnabled, requestRecap, recapState, clearRecap, translations, requestTranslate } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
@@ -33,7 +33,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [paused, setPausedState] = useState(false);
   const [themeIdx, setThemeIdx] = useState(0);
-  const [showHype, setShowHype] = useState(true);
+  const [crypto, setCrypto] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
   const [highlight, setHighlight] = useState("");
   const [soundOn, setSoundOn] = useState(false);
@@ -80,6 +80,12 @@ export default function Dashboard() {
     const now = Date.now();
     return messages.filter((m) => now - m.timestamp < 15000).length >= 12;
   }, [messages]);
+
+  const rate = useMemo(() => {
+    const now = Date.now();
+    return messages.filter((m) => now - m.timestamp < 60_000).length;
+  }, [messages]);
+  const liveCount = useMemo(() => Object.values(status).filter((v) => v === "connected").length, [status]);
 
   // Coordinated scam-wave detector (many accounts, same message).
   const scamWave = useMemo(() => detectScamWave(messages, Date.now()), [messages]);
@@ -265,12 +271,17 @@ export default function Dashboard() {
   const connectedCount = [twitch, kick, x, youtube].filter(Boolean).length;
 
   return (
-    <main className="flex h-screen flex-col bg-ink-950">
+    <main className="relative isolate flex h-screen flex-col bg-ink-950">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 bg-[radial-gradient(70%_100%_at_50%_0%,rgb(var(--accent)/0.08),transparent)]"
+      />
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-white/5 bg-ink-950/80 px-5 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent/40 text-sm font-black text-white shadow-lg shadow-accent/25 ring-1 ring-white/10">
+          <div className="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent/40 text-sm font-black text-white shadow-lg shadow-accent/25 ring-1 ring-white/10">
             MP
+            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-green-500 ring-2 ring-ink-950 animate-pulse-dot" />
           </div>
           <div>
             <h1 className="text-[15px] font-extrabold leading-none tracking-tight">
@@ -280,6 +291,14 @@ export default function Dashboard() {
               Twitch · Kick · YouTube · X — one real-time feed
             </p>
           </div>
+        </div>
+
+        <div className="hidden items-center gap-5 rounded-xl border border-white/[0.06] bg-white/[0.025] px-5 py-1.5 lg:flex">
+          <HeaderStat value={totalCount.toLocaleString()} label="messages" />
+          <div className="h-7 w-px bg-white/10" />
+          <HeaderStat value={rate} label="per min" accent />
+          <div className="h-7 w-px bg-white/10" />
+          <HeaderStat value={`${liveCount}/4`} label="connected" />
         </div>
 
         <div className="flex items-center gap-2">
@@ -355,15 +374,15 @@ export default function Dashboard() {
 
         <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={() => setShowHype((v) => !v)}
-            title="Toggle the crypto Hype Intelligence panel (optional)"
+            onClick={() => setCrypto((v) => !v)}
+            title="Crypto markets + Polymarket — optional add-on, off by default"
             className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
-              showHype
-                ? "bg-accent/15 text-accent ring-accent/30"
+              crypto
+                ? "bg-gold/15 text-gold ring-gold/30"
                 : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
             }`}
           >
-            📊 Hype
+            📈 Crypto
           </button>
           <button
             onClick={() => setHideBots((v) => !v)}
@@ -533,11 +552,9 @@ export default function Dashboard() {
             sendError={sendError}
           />
         </section>
-        {showHype && (
-          <aside className="scrollbar-thin hidden w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-ink-900/40 lg:block">
-            <HypePanel messages={messages} markets={markets} prices={prices} />
-          </aside>
-        )}
+        <aside className="scrollbar-thin hidden w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-ink-900/40 lg:block">
+          <HypePanel messages={messages} markets={markets} prices={prices} crypto={crypto} />
+        </aside>
       </div>
 
       <ConnectModal
@@ -596,6 +613,15 @@ function modLabel(action?: string) {
   if (action === "timeout") return "⏳ User timed out 10 min";
   if (action === "ban") return "⛔ User banned";
   return "✓ Done";
+}
+
+function HeaderStat({ value, label, accent }: { value: string | number; label: string; accent?: boolean }) {
+  return (
+    <div className="flex flex-col items-center leading-none">
+      <span className={`text-[15px] font-bold tabular-nums ${accent ? "text-accent" : "text-zinc-100"}`}>{value}</span>
+      <span className="mt-1 text-[9px] uppercase tracking-wider text-zinc-500">{label}</span>
+    </div>
+  );
 }
 
 function dotColor(state: StatusMap[Platform]) {

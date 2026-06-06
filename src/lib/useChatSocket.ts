@@ -20,6 +20,7 @@ const IDLE_STATUS: StatusMap = { twitch: "idle", kick: "idle", x: "idle", youtub
 
 export function useChatSocket() {
   const [messages, setMessages] = useState<UnifiedMessage[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [socketState, setSocketState] = useState<SocketState>("connecting");
   const [status, setStatus] = useState<StatusMap>(IDLE_STATUS);
   const [markets, setMarkets] = useState<MarketInfo[]>([]);
@@ -34,6 +35,7 @@ export function useChatSocket() {
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
   const seenUsersRef = useRef<Set<string>>(new Set()); // for first-time-chatter tagging
+  const totalRef = useRef(0); // session message counter (uncapped)
   const attemptsRef = useRef(0);
   const pausedRef = useRef(false);
   const closingRef = useRef(false);
@@ -55,6 +57,8 @@ export function useChatSocket() {
           m.firstSeen = true;
         }
       }
+      totalRef.current += batch.length;
+      setTotalCount(totalRef.current);
       setMessages((prev) => {
         const next = prev.concat(batch);
         return next.length > MAX_MESSAGES ? next.slice(next.length - MAX_MESSAGES) : next;
@@ -125,6 +129,8 @@ export function useChatSocket() {
     setMessages([]);
     bufferRef.current = [];
     seenUsersRef.current.clear();
+    totalRef.current = 0;
+    setTotalCount(0);
     setStatus({
       twitch: demo || channels.twitch ? "connecting" : "idle",
       kick: demo || channels.kick ? "connecting" : "idle",
@@ -146,6 +152,8 @@ export function useChatSocket() {
     setMessages([]);
     bufferRef.current = [];
     seenUsersRef.current.clear();
+    totalRef.current = 0;
+    setTotalCount(0);
   }, []);
 
   const feature = useCallback((m: UnifiedMessage) => {
@@ -206,6 +214,7 @@ export function useChatSocket() {
 
   return {
     messages,
+    totalCount,
     socketState,
     status,
     markets,
