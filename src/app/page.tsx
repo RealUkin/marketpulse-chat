@@ -11,6 +11,7 @@ import { consumeTwitchRedirect, getStoredTwitchAuth, twitchClientId, type Twitch
 import { isBot } from "@/lib/bots";
 import { downloadMomentCard } from "@/lib/momentCard";
 import { detectScamWave, type ScamWave } from "@shared/scamWave";
+import { IPlus, ITrend, IBot, IBell, IBellOff, ISpeaker, ISparkle, ICamera, IPause, IPlay, ITrash } from "@/components/icons";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -337,7 +338,7 @@ export default function Dashboard() {
           onClick={() => setConnectOpen(true)}
           className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-1.5 font-semibold text-white shadow-lg shadow-accent/25 transition hover:opacity-90"
         >
-          <span className="text-base leading-none">＋</span> Connect platforms
+          <IPlus className="h-4 w-4" /> Connect platforms
         </button>
         {connectedCount > 0 && (
           <span className="text-[11px] text-zinc-500">{connectedCount} connected</span>
@@ -376,24 +377,24 @@ export default function Dashboard() {
           <button
             onClick={() => setCrypto((v) => !v)}
             title="Crypto markets + Polymarket — optional add-on, off by default"
-            className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
               crypto
                 ? "bg-gold/15 text-gold ring-gold/30"
                 : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
             }`}
           >
-            📈 Crypto
+            <ITrend /> Crypto
           </button>
           <button
             onClick={() => setHideBots((v) => !v)}
             title={hideBots ? "Bots hidden — click to show" : "Hide messages from known chat bots"}
-            className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
               hideBots
                 ? "bg-accent/15 text-accent ring-accent/30"
                 : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
             }`}
           >
-            🤖 {hideBots ? "Hidden" : "Bots"}
+            <IBot /> {hideBots ? "Hidden" : "Bots"}
           </button>
           <input
             value={search}
@@ -411,50 +412,58 @@ export default function Dashboard() {
           <button
             onClick={toggleSound}
             title="Play a sound on new messages"
-            className={`rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
+            className={`inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
               soundOn ? "bg-accent/15 text-accent ring-accent/30" : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
             }`}
           >
-            {soundOn ? "🔔" : "🔕"}
+            {soundOn ? <IBell /> : <IBellOff />}
           </button>
           <button
             onClick={toggleTts}
             title="Read new chat aloud (text-to-speech)"
-            className={`rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
+            className={`inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
               ttsOn ? "bg-accent/15 text-accent ring-accent/30" : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
             }`}
           >
-            🗣️
+            <ISpeaker />
           </button>
           <button
             onClick={togglePause}
-            className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs ring-1 ring-white/5 transition hover:bg-white/10"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs ring-1 ring-white/5 transition hover:bg-white/10"
           >
-            {paused ? "▶ Resume" : "⏸ Pause"}
+            {paused ? (
+              <>
+                <IPlay /> Resume
+              </>
+            ) : (
+              <>
+                <IPause /> Pause
+              </>
+            )}
           </button>
           <button
             onClick={() => requestRecap(messages.filter((m) => !m.event && m.text.trim()).slice(-120).map((m) => `${m.displayName}: ${m.text}`))}
             title={aiEnabled ? "AI recap of the last few minutes" : "AI recap — needs ANTHROPIC_API_KEY (click for setup)"}
-            className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs text-zinc-300 ring-1 ring-white/5 transition hover:bg-white/10"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs text-zinc-300 ring-1 ring-white/5 transition hover:bg-white/10"
           >
-            🧠 Recap
+            <ISparkle /> Recap
           </button>
           <button
             onClick={() => downloadMomentCard(filtered, THEMES[themeIdx].rgb)}
             title="Export a shareable 9:16 'chat moment' card for X / TikTok"
-            className={`rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
               hot
                 ? "bg-accent/20 text-accent ring-accent/40 animate-pulse"
                 : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
             }`}
           >
-            📸 {hot ? "Moment 🔥" : "Moment"}
+            <ICamera /> Moment
           </button>
           <button
             onClick={clear}
-            className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs ring-1 ring-white/5 transition hover:bg-white/10"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs ring-1 ring-white/5 transition hover:bg-white/10"
           >
-            Clear
+            <ITrash /> Clear
           </button>
         </div>
       </div>
