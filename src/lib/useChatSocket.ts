@@ -27,6 +27,9 @@ export function useChatSocket() {
   const [featured, setFeatured] = useState<UnifiedMessage | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [modResult, setModResult] = useState<{ ok: boolean; action?: string; error?: string } | null>(null);
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [recapState, setRecapState] = useState<{ loading: boolean; text?: string; error?: string } | null>(null);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
 
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
@@ -85,6 +88,13 @@ export function useChatSocket() {
       else if (ev.type === "featured") setFeatured(ev.data);
       else if (ev.type === "sendResult") setSendError(ev.ok ? null : ev.error ?? "Send failed");
       else if (ev.type === "modResult") setModResult({ ok: ev.ok, action: ev.action, error: ev.error });
+      else if (ev.type === "hello") setAiEnabled(ev.aiEnabled);
+      else if (ev.type === "recapResult")
+        setRecapState({ loading: false, text: ev.ok ? ev.text : undefined, error: ev.ok ? undefined : ev.error ?? "Recap failed" });
+      else if (ev.type === "translateResult") {
+        const tx = ev.text;
+        if (ev.ok && tx) setTranslations((t) => ({ ...t, [ev.id]: tx }));
+      }
     };
 
     ws.onerror = () => ws.close();
@@ -181,6 +191,19 @@ export function useChatSocket() {
 
   const clearModResult = useCallback(() => setModResult(null), []);
 
+  const requestRecap = useCallback((texts: string[]) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      setRecapState({ loading: true });
+      ws.send(JSON.stringify({ type: "recap", texts }));
+    }
+  }, []);
+  const clearRecap = useCallback(() => setRecapState(null), []);
+  const requestTranslate = useCallback((id: string, text: string) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "translate", id, text }));
+  }, []);
+
   return {
     messages,
     socketState,
@@ -198,5 +221,11 @@ export function useChatSocket() {
     moderate,
     modResult,
     clearModResult,
+    aiEnabled,
+    requestRecap,
+    recapState,
+    clearRecap,
+    translations,
+    requestTranslate,
   };
 }

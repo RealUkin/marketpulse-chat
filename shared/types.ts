@@ -96,6 +96,8 @@ export type ClientCommand =
       token: string;
       clientId: string;
     }
+  | { type: "recap"; texts: string[] }
+  | { type: "translate"; id: string; text: string }
   | { type: "ping" };
 
 export interface MarketInfo {
@@ -115,11 +117,13 @@ export interface PriceInfo {
 
 // Server -> Client
 export type ServerEvent =
-  | { type: "hello"; ok: true }
+  | { type: "hello"; ok: true; aiEnabled: boolean }
   | { type: "message"; data: UnifiedMessage }
   | { type: "status"; platform: Platform; state: ConnectionState; detail?: string }
   | { type: "markets"; data: MarketInfo[] }
   | { type: "prices"; data: PriceInfo[] }
   | { type: "featured"; data: UnifiedMessage | null }
   | { type: "sendResult"; ok: boolean; error?: string }
-  | { type: "modResult"; ok: boolean; action?: string; error?: string };
+  | { type: "modResult"; ok: boolean; action?: string; error?: string }
+  | { type: "recapResult"; ok: boolean; text?: string; error?: string }
+  | { type: "translateResult"; id: string; ok: boolean; text?: string; error?: string };

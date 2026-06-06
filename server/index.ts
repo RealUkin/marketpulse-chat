@@ -13,6 +13,7 @@ import { fetchMarkets } from "./polymarket";
 import { sendTwitchMessage } from "./send";
 import { moderateTwitch } from "./moderate";
 import { fetchPrices } from "./coingecko";
+import { aiConfigured, recap, translate } from "./ai";
 
 const PORT = Number(process.env.WS_PORT ?? 3001);
 
@@ -92,7 +93,7 @@ function broadcast(ev: ServerEvent) {
 
 wss.on("connection", (ws) => {
   const session = new Session(ws);
-  ws.send(JSON.stringify({ type: "hello", ok: true }));
+  ws.send(JSON.stringify({ type: "hello", ok: true, aiEnabled: aiConfigured() }));
 
   ws.on("message", (raw) => {
     let cmd: ClientCommand;
@@ -123,6 +124,20 @@ wss.on("connection", (ws) => {
       moderateTwitch(cmd)
         .then(() => reply({ type: "modResult", ok: true, action: cmd.action }))
         .catch((e) => reply({ type: "modResult", ok: false, action: cmd.action, error: String(e?.message ?? e) }));
+    } else if (cmd.type === "recap") {
+      const reply = (ev: ServerEvent) => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(ev));
+      };
+      recap(cmd.texts)
+        .then((text) => reply({ type: "recapResult", ok: true, text }))
+        .catch((e) => reply({ type: "recapResult", ok: false, error: String(e?.message ?? e) }));
+    } else if (cmd.type === "translate") {
+      const reply = (ev: ServerEvent) => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(ev));
+      };
+      translate(cmd.text)
+        .then((text) => reply({ type: "translateResult", id: cmd.id, ok: true, text }))
+        .catch((e) => reply({ type: "translateResult", id: cmd.id, ok: false, error: String(e?.message ?? e) }));
     }
   });
 

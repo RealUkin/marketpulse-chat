@@ -47,6 +47,9 @@ function Row({
   onModerate,
   pinned,
   onPin,
+  aiEnabled,
+  translation,
+  onTranslate,
 }: {
   m: UnifiedMessage;
   highlight: string[];
@@ -55,6 +58,9 @@ function Row({
   onModerate?: (action: "delete" | "timeout" | "ban", m: UnifiedMessage) => void;
   pinned?: boolean;
   onPin?: (m: UnifiedMessage) => void;
+  aiEnabled?: boolean;
+  translation?: string;
+  onTranslate?: (m: UnifiedMessage) => void;
 }) {
   if (m.event) return <EventRow m={m} />;
   const meta = PLATFORM_META[m.platform];
@@ -163,8 +169,18 @@ function Row({
               📌
             </button>
           )}
+          {aiEnabled && onTranslate && !translation && (
+            <button
+              onClick={() => onTranslate(m)}
+              title="Translate to English"
+              className="shrink-0 pl-1 text-xs text-zinc-600 opacity-0 transition hover:text-accent group-hover:opacity-100"
+            >
+              🌐
+            </button>
+          )}
         </div>
         <div className="break-words text-[14px] text-zinc-200">{renderBody(m)}</div>
+        {translation && <div className="mt-0.5 text-[13px] italic text-zinc-400">🌐 {translation}</div>}
       </div>
     </div>
   );

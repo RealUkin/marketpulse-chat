@@ -29,16 +29,20 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
 - **Full emote support** — native emotes + **channel sub emotes** + **7TV / BTTV / FFZ** (Twitch) and **7TV** (Kick) third-party emotes + YouTube emojis, all rendered as images. Plus an **emote "pop"** effect in the overlay when chat spams.
 - **🔥 Hype Intelligence panel** (built for a trading audience):
   - Live **$ticker / cashtag** detection, highlighted inline + ranked leaderboard
+  - **Chat × Market** — live token prices (keyless) beside chat hype, flagging chat-vs-market **divergence** ("chat's loud on $X while it's down 6%")
   - **Bullish / bearish / neutral** sentiment meter
   - **Hype velocity** (messages/min) and most-active users
   - **Unanswered questions** queue, weighted by user role
 - **💸 Live Polymarket odds** — pulls active markets from Polymarket's public API and shows live Yes/No probabilities (the challenge is *presented by Polymarket*).
 - **Crypto = optional** — the whole Hype Intelligence panel toggles off for a clean, non-crypto-friendly chat. Most streamers aren't traders; the chat is the hero.
-- **🛡️ Crypto scam/link defense** — flags phishing links, wallet/contract addresses, and scam phrases (free-nitro, "double your", airdrop / connect-wallet) with a ⚠ marker + a Safety panel. Nobody else protects crypto chats.
+- **🛡️ Crypto scam/link defense** — flags phishing links, wallet/contract addresses, and scam phrases (free-nitro, "double your", airdrop / connect-wallet) with a ⚠ marker + a Safety panel, and detects **coordinated scam waves** (many accounts posting one message) with a one-click ban. Nobody else protects crypto chats.
 - **🎛️ Connect-platforms modal** — toggle each platform on/off and add your channel (your multistream picker). No login needed to read chat — the key edge over Restream.
 - **⭐ Feature-on-stream** — star any message to broadcast it as a large featured banner on the OBS overlay.
 - **💬 Reply from the app** — sign in with Twitch (your token stays in *your* browser) and post to your chat without leaving the command center.
 - **🛡️ Moderate from the app** — delete, timeout, or ban from any Twitch message (official Helix API), so you can run chat without your native dock. Pairs with scam detection for **one-click bans**.
+- **📸 Shareable chat-moment card** — one-click export a vertical 9:16 card of a hype moment for X / TikTok (pure canvas, no keys).
+- **🧠 AI recap & translate** *(optional)* — one-tap "caught you up" summary of the last few minutes + per-message translation. Off unless you set a key; the app works fully without it.
+- **🗣️ Read-aloud (TTS) · 🤖 hide-bots · 👋 first-time-chatter · 📌 pin-to-top** — creator quality-of-life touches.
 - **Creator controls** — per-platform filters, search, keyword/@mention highlight, sound-on-new-message, pause/clear, and a 5-preset accent **theme switcher**.
 - **🎥 OBS overlay mode** — a transparent `/overlay` route (browser source) with emote "pop" + the featured banner.
 - **🧪 Demo Mode** — realistic synthetic chat across all four platforms, so the app works **instantly with zero API keys** (and never breaks on camera).
@@ -116,7 +120,8 @@ Your access token is stored only in your browser's `localStorage` and sent only 
 |---|---|
 | `WS_PORT` | Ingestion server port (default `3001`) |
 | `NEXT_PUBLIC_WS_URL` | WS URL the client connects to (default `ws://localhost:3001`) |
-| `NEXT_PUBLIC_TWITCH_CLIENT_ID` | Twitch app Client ID — enables **Sign in with Twitch** to reply (read-only works without it) |
+| `NEXT_PUBLIC_TWITCH_CLIENT_ID` | Twitch app Client ID — enables **Sign in with Twitch** to reply/moderate (read-only works without it) |
+| `ANTHROPIC_API_KEY` | Optional — enables AI **recap** + **translate**. Everything else works without it |
 | `X_HEADLESS=1` | Run the X browser headless (default headful; X flags headless) |
 | `KICK_CHATROOM_<SLUG>` | Hardcode a Kick chatroom ID for guaranteed demo reliability |
 

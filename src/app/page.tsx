@@ -23,7 +23,7 @@ const THEMES = [
 ];
 
 export default function Dashboard() {
-  const { messages, socketState, status, markets, prices, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult } = useChatSocket();
+  const { messages, socketState, status, markets, prices, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult, aiEnabled, requestRecap, recapState, clearRecap, translations, requestTranslate } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
@@ -414,6 +414,13 @@ export default function Dashboard() {
             {paused ? "▶ Resume" : "⏸ Pause"}
           </button>
           <button
+            onClick={() => requestRecap(messages.filter((m) => !m.event && m.text.trim()).slice(-120).map((m) => `${m.displayName}: ${m.text}`))}
+            title={aiEnabled ? "AI recap of the last few minutes" : "AI recap — needs ANTHROPIC_API_KEY (click for setup)"}
+            className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs text-zinc-300 ring-1 ring-white/5 transition hover:bg-white/10"
+          >
+            🧠 Recap
+          </button>
+          <button
             onClick={() => downloadMomentCard(filtered, THEMES[themeIdx].rgb)}
             title="Export a shareable 9:16 'chat moment' card for X / TikTok"
             className={`rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
@@ -512,6 +519,9 @@ export default function Dashboard() {
               onModerate={handleModerate}
               pinnedIds={pinnedIds}
               onPin={handlePin}
+              aiEnabled={aiEnabled}
+              translations={translations}
+              onTranslate={(m) => requestTranslate(m.id, m.text)}
             />
           </div>
           <Composer
@@ -537,6 +547,34 @@ export default function Dashboard() {
         onClose={() => setConnectOpen(false)}
         onApply={handleApply}
       />
+
+      {recapState && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          onClick={clearRecap}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-white/10 bg-ink-900 p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <div className="text-lg font-bold tracking-tight">🧠 Caught you up</div>
+              <button onClick={clearRecap} className="text-zinc-500 transition hover:text-zinc-200">
+                ✕
+              </button>
+            </div>
+            {recapState.loading ? (
+              <div className="py-6 text-center text-sm text-zinc-400">Summarizing recent chat…</div>
+            ) : recapState.error ? (
+              <div className="rounded-lg bg-red-950/40 p-3 text-[13px] leading-relaxed text-red-200">
+                ⚠ {recapState.error}
+              </div>
+            ) : (
+              <div className="whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-200">{recapState.text}</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {modResult && (
         <div

@@ -12,6 +12,9 @@ export function ChatFeed({
   onModerate,
   pinnedIds,
   onPin,
+  aiEnabled,
+  translations,
+  onTranslate,
 }: {
   messages: UnifiedMessage[];
   paused: boolean;
@@ -21,6 +24,9 @@ export function ChatFeed({
   onModerate?: (action: "delete" | "timeout" | "ban", m: UnifiedMessage) => void;
   pinnedIds?: Set<string>;
   onPin?: (m: UnifiedMessage) => void;
+  aiEnabled?: boolean;
+  translations?: Record<string, string>;
+  onTranslate?: (m: UnifiedMessage) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -48,6 +54,9 @@ export function ChatFeed({
               onModerate={onModerate}
               pinned={pinnedIds?.has(m.id)}
               onPin={onPin}
+              aiEnabled={aiEnabled}
+              translation={translations?.[m.id]}
+              onTranslate={onTranslate}
             />
           ))}
         </div>
