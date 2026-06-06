@@ -112,6 +112,14 @@ function Row({
           {m.badges.map((b, i) => (
             <Badge key={i} badge={b} />
           ))}
+          {m.firstSeen && (
+            <span
+              className="rounded bg-emerald-500/20 px-1 text-[10px] font-bold uppercase leading-none text-emerald-300 ring-1 ring-emerald-500/40"
+              title="First time chatting this session"
+            >
+              👋 new
+            </span>
+          )}
           <span className="truncate font-semibold" style={{ color: userColor }}>
             {m.displayName}
           </span>

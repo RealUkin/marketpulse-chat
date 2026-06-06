@@ -69,6 +69,7 @@ export interface UnifiedMessage {
   parts?: MessagePart[]; // pre-tokenized text + emote images for rendering
   intelligence?: Intelligence;
   event?: EventInfo; // sub / gift / bits / raid / superchat alert
+  firstSeen?: boolean; // first message from this user this session (client-tagged)
 }
 
 export interface ChannelConfig {

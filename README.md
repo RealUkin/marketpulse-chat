@@ -6,6 +6,20 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
 
 > Existing tools (Restream, Streamlabs, StreamElements, Social Stream Ninja, Streamer.bot) *merge* chat. MarketPulse helps crypto streamers **understand** it.
 
+### How it compares
+
+| | MarketPulse | Restream | StreamElements | Social Stream Ninja |
+|---|:---:|:---:|:---:|:---:|
+| Twitch + Kick + YouTube in one feed | ✅ | ✅ | partial | ✅ |
+| **X / Twitter live-broadcast chat** | ✅ | ❌ | ❌ | ❌ |
+| 7TV / BTTV / FFZ + channel sub emotes | ✅ | partial | partial | ✅ |
+| Reply **and** moderate from one pane | ✅ (Twitch) | partial | ❌ | partial |
+| Crypto intel — tickers · sentiment · Polymarket | ✅ | ❌ | ❌ | ❌ |
+| Scam / wallet-drainer detection | ✅ | ❌ | ❌ | ❌ |
+| No login needed to read chat | ✅ | ❌ | ❌ | ✅ |
+
+<sub>Reflects publicly documented features as of mid-2026; tools evolve.</sub>
+
 ---
 
 ## ✨ Features
@@ -136,9 +150,20 @@ src/lib/           useChatSocket (WS client) · platform meta
 - **Account tokens (future OAuth)** live only in local, gitignored files (`.env.local` / `.auth/`); the app reads them at runtime and they never enter git history.
 - Chat messages are **sanitized before render** (no raw HTML injection), and the ingestion server only relays chat/feature events — it persists nothing.
 
-## ⚠️ Notes
+## 🔬 Methods & reliability
 
-The Kick (Pusher) and X (broadcast chat) integrations use unofficial/undocumented endpoints and are intended for personal/educational use. Demo Mode requires nothing and always works.
+MarketPulse reads each platform the most robust way available today — some official, some the same undocumented endpoints the web clients themselves use. The honest picture:
+
+| Platform | Method | Official? |
+|---|---|:---:|
+| Twitch | IRC over WebSocket (read) · Helix API (reply / moderate) | ✅ |
+| YouTube | innertube live chat (`youtube-chat`) — no key | ⚠️ |
+| Kick | Pusher WebSocket (the one kick.com uses) — read-only | ⚠️ |
+| X / Twitter | Playwright intercepts the live-broadcast chat WebSocket | ⚠️ |
+
+X has no public live-chat API (guest tokens were removed in 2023), so intercepting the client's own WebSocket frames is the most resilient path — it survives UI redesigns. These unofficial integrations are intended for personal/educational use.
+
+**Resilience is built in:** every connection auto-reconnects with exponential backoff; the feed is throttled and capped so big raids don't choke it; and **Demo Mode** is a fully working app with zero keys — so a live demo never depends on a third party being up. No credentials are stored in the repo; tokens live only in your browser or local machine.
 
 ---
 

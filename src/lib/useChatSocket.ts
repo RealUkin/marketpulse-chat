@@ -28,6 +28,7 @@ export function useChatSocket() {
 
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
+  const seenUsersRef = useRef<Set<string>>(new Set()); // for first-time-chatter tagging
   const attemptsRef = useRef(0);
   const pausedRef = useRef(false);
   const closingRef = useRef(false);
@@ -41,6 +42,14 @@ export function useChatSocket() {
       // Snapshot + clear OUTSIDE the updater so it stays pure (StrictMode double-invokes updaters).
       const batch = bufferRef.current;
       bufferRef.current = [];
+      for (const m of batch) {
+        if (m.event) continue;
+        const key = `${m.platform}:${m.username.toLowerCase()}`;
+        if (!seenUsersRef.current.has(key)) {
+          seenUsersRef.current.add(key);
+          m.firstSeen = true;
+        }
+      }
       setMessages((prev) => {
         const next = prev.concat(batch);
         return next.length > MAX_MESSAGES ? next.slice(next.length - MAX_MESSAGES) : next;
@@ -102,6 +111,7 @@ export function useChatSocket() {
     lastSubRef.current = { channels, demo };
     setMessages([]);
     bufferRef.current = [];
+    seenUsersRef.current.clear();
     setStatus({
       twitch: demo || channels.twitch ? "connecting" : "idle",
       kick: demo || channels.kick ? "connecting" : "idle",
@@ -122,6 +132,7 @@ export function useChatSocket() {
   const clear = useCallback(() => {
     setMessages([]);
     bufferRef.current = [];
+    seenUsersRef.current.clear();
   }, []);
 
   const feature = useCallback((m: UnifiedMessage) => {

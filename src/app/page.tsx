@@ -8,6 +8,7 @@ import { HypePanel } from "@/components/HypePanel";
 import { ConnectModal } from "@/components/ConnectModal";
 import { Composer } from "@/components/Composer";
 import { consumeTwitchRedirect, getStoredTwitchAuth, twitchClientId, type TwitchAuth } from "@/lib/twitchAuth";
+import { isBot } from "@/lib/bots";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -34,10 +35,13 @@ export default function Dashboard() {
   const [connectOpen, setConnectOpen] = useState(false);
   const [highlight, setHighlight] = useState("");
   const [soundOn, setSoundOn] = useState(false);
+  const [ttsOn, setTtsOn] = useState(false);
+  const [hideBots, setHideBots] = useState(false);
   const [auth, setAuth] = useState<TwitchAuth | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const lastBeepRef = useRef(0);
   const prevLenRef = useRef(0);
+  const ttsLastIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem("mp-theme"));
@@ -57,9 +61,10 @@ export default function Dashboard() {
     return messages.filter(
       (m) =>
         filters.has(m.platform) &&
+        (!hideBots || m.event || !isBot(m.username)) &&
         (q === "" || m.text.toLowerCase().includes(q) || m.displayName.toLowerCase().includes(q)),
     );
-  }, [messages, filters, search]);
+  }, [messages, filters, search, hideBots]);
 
   const highlightList = useMemo(
     () => highlight.toLowerCase().split(",").map((s) => s.trim()).filter(Boolean),
@@ -94,6 +99,39 @@ export default function Dashboard() {
     }
     prevLenRef.current = messages.length;
   }, [messages.length, soundOn, paused]);
+
+  // Read new chat aloud (opt-in) via the browser SpeechSynthesis API.
+  useEffect(() => {
+    const synth = typeof window !== "undefined" ? window.speechSynthesis : undefined;
+    if (!ttsOn || paused || !synth) {
+      ttsLastIdRef.current = messages.length ? messages[messages.length - 1].id : ttsLastIdRef.current;
+      return;
+    }
+    let start = messages.length; // on enable, skip the backlog
+    if (ttsLastIdRef.current) {
+      const i = messages.findIndex((m) => m.id === ttsLastIdRef.current);
+      start = i >= 0 ? i + 1 : Math.max(0, messages.length - 1);
+    }
+    ttsLastIdRef.current = messages.length ? messages[messages.length - 1].id : ttsLastIdRef.current;
+    const fresh = messages
+      .slice(start)
+      .filter((m) => !m.event && m.intelligence?.risk !== "scam" && m.text.trim());
+    if (!fresh.length) return;
+    // Stay near real-time: if speech is backed up, only voice the latest.
+    const toSpeak = synth.speaking || synth.pending ? fresh.slice(-1) : fresh.slice(-2);
+    for (const m of toSpeak) {
+      const u = new SpeechSynthesisUtterance(`${m.displayName} says ${m.text}`.slice(0, 160));
+      u.rate = 1.05;
+      synth.speak(u);
+    }
+  }, [messages, ttsOn, paused]);
+
+  const toggleTts = () =>
+    setTtsOn((v) => {
+      const next = !v;
+      if (!next && typeof window !== "undefined") window.speechSynthesis?.cancel();
+      return next;
+    });
 
   const toggleSound = () => {
     setSoundOn((v) => {
@@ -285,6 +323,17 @@ export default function Dashboard() {
           >
             📊 Hype
           </button>
+          <button
+            onClick={() => setHideBots((v) => !v)}
+            title={hideBots ? "Bots hidden — click to show" : "Hide messages from known chat bots"}
+            className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
+              hideBots
+                ? "bg-accent/15 text-accent ring-accent/30"
+                : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
+            }`}
+          >
+            🤖 {hideBots ? "Hidden" : "Bots"}
+          </button>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -306,6 +355,15 @@ export default function Dashboard() {
             }`}
           >
             {soundOn ? "🔔" : "🔕"}
+          </button>
+          <button
+            onClick={toggleTts}
+            title="Read new chat aloud (text-to-speech)"
+            className={`rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
+              ttsOn ? "bg-accent/15 text-accent ring-accent/30" : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
+            }`}
+          >
+            🗣️
           </button>
           <button
             onClick={togglePause}
