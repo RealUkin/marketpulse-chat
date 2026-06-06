@@ -36,3 +36,4 @@ yarn-error.log*
 
 # local screenshot util (dev only)
 /_shot.mjs
+research/

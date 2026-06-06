@@ -24,6 +24,7 @@ export function useChatSocket() {
   const [markets, setMarkets] = useState<MarketInfo[]>([]);
   const [featured, setFeatured] = useState<UnifiedMessage | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [modResult, setModResult] = useState<{ ok: boolean; action?: string; error?: string } | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
@@ -71,6 +72,7 @@ export function useChatSocket() {
       else if (ev.type === "markets") setMarkets(ev.data);
       else if (ev.type === "featured") setFeatured(ev.data);
       else if (ev.type === "sendResult") setSendError(ev.ok ? null : ev.error ?? "Send failed");
+      else if (ev.type === "modResult") setModResult({ ok: ev.ok, action: ev.action, error: ev.error });
     };
 
     ws.onerror = () => ws.close();
@@ -143,6 +145,28 @@ export function useChatSocket() {
     [],
   );
 
+  const moderate = useCallback(
+    (cmd: {
+      action: "delete" | "timeout" | "ban";
+      broadcasterId: string;
+      moderatorId: string;
+      targetUserId?: string;
+      messageId?: string;
+      durationSec?: number;
+      token: string;
+      clientId: string;
+    }) => {
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        setModResult(null);
+        ws.send(JSON.stringify({ type: "moderate", ...cmd }));
+      }
+    },
+    [],
+  );
+
+  const clearModResult = useCallback(() => setModResult(null), []);
+
   return {
     messages,
     socketState,
@@ -156,5 +180,8 @@ export function useChatSocket() {
     unfeature,
     sendMessage,
     sendError,
+    moderate,
+    modResult,
+    clearModResult,
   };
 }

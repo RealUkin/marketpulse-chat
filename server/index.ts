@@ -11,6 +11,7 @@ import { createYouTubeAdapter } from "./adapters/youtube";
 import type { Adapter } from "./adapters/types";
 import { fetchMarkets } from "./polymarket";
 import { sendTwitchMessage } from "./send";
+import { moderateTwitch } from "./moderate";
 
 const PORT = Number(process.env.WS_PORT ?? 3001);
 
@@ -105,6 +106,13 @@ wss.on("connection", (ws) => {
       } else {
         reply({ type: "sendResult", ok: false, error: `Replying to ${cmd.platform} isn't supported yet` });
       }
+    } else if (cmd.type === "moderate") {
+      const reply = (ev: ServerEvent) => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(ev));
+      };
+      moderateTwitch(cmd)
+        .then(() => reply({ type: "modResult", ok: true, action: cmd.action }))
+        .catch((e) => reply({ type: "modResult", ok: false, action: cmd.action, error: String(e?.message ?? e) }));
     }
   });
 

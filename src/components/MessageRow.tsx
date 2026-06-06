@@ -43,10 +43,14 @@ function Row({
   m,
   highlight,
   onFeature,
+  canModerate,
+  onModerate,
 }: {
   m: UnifiedMessage;
   highlight: string[];
   onFeature?: (m: UnifiedMessage) => void;
+  canModerate?: boolean;
+  onModerate?: (action: "delete" | "timeout" | "ban", m: UnifiedMessage) => void;
 }) {
   if (m.event) return <EventRow m={m} />;
   const meta = PLATFORM_META[m.platform];
@@ -114,6 +118,19 @@ function Row({
           <span className="ml-auto shrink-0 pl-2 text-[10px] tabular-nums text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100">
             {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
+          {m.platform === "twitch" && canModerate && onModerate && (
+            <span className="flex shrink-0 items-center gap-1 pl-1 text-xs opacity-0 transition group-hover:opacity-100">
+              <button onClick={() => onModerate("delete", m)} title="Delete message" className="text-zinc-600 transition hover:text-amber-400">
+                🗑
+              </button>
+              <button onClick={() => onModerate("timeout", m)} title="Timeout 10 min" className="text-zinc-600 transition hover:text-orange-400">
+                ⏳
+              </button>
+              <button onClick={() => onModerate("ban", m)} title="Ban user" className="text-zinc-600 transition hover:text-red-400">
+                ⛔
+              </button>
+            </span>
+          )}
           {onFeature && (
             <button
               onClick={() => onFeature(m)}

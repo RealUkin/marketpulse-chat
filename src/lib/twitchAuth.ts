@@ -5,7 +5,12 @@
 // never sent to git, only to the local ingestion server when you send a message.
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID ?? "";
-const SCOPES = ["chat:read", "chat:edit"]; // read + post chat as you
+const SCOPES = [
+  "chat:read",
+  "chat:edit", // post chat as you
+  "moderator:manage:banned_users", // timeout / ban
+  "moderator:manage:chat_messages", // delete a message
+];
 const STORAGE_KEY = "mp-twitch-auth";
 const STATE_KEY = "mp-twitch-state";
 
@@ -17,6 +22,10 @@ export interface TwitchAuth {
 
 export function isTwitchConfigured(): boolean {
   return CLIENT_ID.length > 0;
+}
+
+export function twitchClientId(): string {
+  return CLIENT_ID;
 }
 
 export function getStoredTwitchAuth(): TwitchAuth | null {

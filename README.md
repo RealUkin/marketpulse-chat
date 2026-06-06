@@ -24,6 +24,7 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
 - **🎛️ Connect-platforms modal** — toggle each platform on/off and add your channel (your multistream picker). No login needed to read chat — the key edge over Restream.
 - **⭐ Feature-on-stream** — star any message to broadcast it as a large featured banner on the OBS overlay.
 - **💬 Reply from the app** — sign in with Twitch (your token stays in *your* browser) and post to your chat without leaving the command center.
+- **🛡️ Moderate from the app** — delete, timeout, or ban from any Twitch message (official Helix API), so you can run chat without your native dock. Pairs with scam detection for **one-click bans**.
 - **Creator controls** — per-platform filters, search, keyword/@mention highlight, sound-on-new-message, pause/clear, and a 5-preset accent **theme switcher**.
 - **🎥 OBS overlay mode** — a transparent `/overlay` route (browser source) with emote "pop" + the featured banner.
 - **🧪 Demo Mode** — realistic synthetic chat across all four platforms, so the app works **instantly with zero API keys** (and never breaks on camera).
@@ -83,7 +84,7 @@ Then enter the broadcast URL (or ID) in the **X** field and Connect. `x-auth.jso
 
 ## 💬 Reply from the app (Twitch sign-in)
 
-Reading chat needs **no login**. To *reply* to your Twitch chat from inside the app, sign in with your own Twitch account — a 2-minute, one-time setup:
+Reading chat needs **no login**. To *reply* and *moderate* (delete / timeout / ban) from inside the app, sign in with your own Twitch account — a 2-minute, one-time setup:
 
 1. Go to the [Twitch Developer Console](https://dev.twitch.tv/console/apps) → **Register Your Application**.
 2. Set **OAuth Redirect URL** to exactly `http://localhost:3000`, category *Application Integration*.
@@ -93,7 +94,7 @@ Reading chat needs **no login**. To *reply* to your Twitch chat from inside the 
    ```
 4. Restart `npm run dev`, then click **Sign in with Twitch** under the feed and authorize.
 
-Your access token is stored only in your browser's `localStorage` and sent only to your local ingestion server to post the message. It is **never committed** and there is no client secret. Scopes requested: `chat:read chat:edit` (read + post as you).
+Your access token is stored only in your browser's `localStorage` and sent only to your local ingestion server to post or moderate. It is **never committed** and there is no client secret. Scopes requested: `chat:read chat:edit` (read + post) plus `moderator:manage:banned_users` and `moderator:manage:chat_messages` (timeout / ban / delete, on channels you moderate).
 
 ## ⚙️ Environment variables
 

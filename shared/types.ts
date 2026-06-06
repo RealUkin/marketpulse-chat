@@ -56,6 +56,8 @@ export interface UnifiedMessage {
   id: string;
   platform: Platform;
   channel: string;
+  channelId?: string; // platform broadcaster/room id (e.g. Twitch room-id) — for moderation
+  authorId?: string; // platform user id of the sender — for moderation
   username: string;
   displayName: string;
   avatarUrl?: string;
@@ -82,6 +84,17 @@ export type ClientCommand =
   | { type: "feature"; data: UnifiedMessage }
   | { type: "unfeature" }
   | { type: "send"; platform: Platform; channel: string; text: string; token: string; login: string }
+  | {
+      type: "moderate";
+      action: "delete" | "timeout" | "ban";
+      broadcasterId: string;
+      moderatorId: string;
+      targetUserId?: string;
+      messageId?: string;
+      durationSec?: number;
+      token: string;
+      clientId: string;
+    }
   | { type: "ping" };
 
 export interface MarketInfo {
@@ -100,4 +113,5 @@ export type ServerEvent =
   | { type: "status"; platform: Platform; state: ConnectionState; detail?: string }
   | { type: "markets"; data: MarketInfo[] }
   | { type: "featured"; data: UnifiedMessage | null }
-  | { type: "sendResult"; ok: boolean; error?: string };
+  | { type: "sendResult"; ok: boolean; error?: string }
+  | { type: "modResult"; ok: boolean; action?: string; error?: string };

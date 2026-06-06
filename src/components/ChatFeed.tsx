@@ -8,11 +8,15 @@ export function ChatFeed({
   paused,
   highlight,
   onFeature,
+  canModerate,
+  onModerate,
 }: {
   messages: UnifiedMessage[];
   paused: boolean;
   highlight: string[];
   onFeature?: (m: UnifiedMessage) => void;
+  canModerate?: boolean;
+  onModerate?: (action: "delete" | "timeout" | "ban", m: UnifiedMessage) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -31,7 +35,14 @@ export function ChatFeed({
       ) : (
         <div className="flex flex-col py-2">
           {messages.map((m) => (
-            <MessageRow key={m.id} m={m} highlight={highlight} onFeature={onFeature} />
+            <MessageRow
+              key={m.id}
+              m={m}
+              highlight={highlight}
+              onFeature={onFeature}
+              canModerate={canModerate}
+              onModerate={onModerate}
+            />
           ))}
         </div>
       )}

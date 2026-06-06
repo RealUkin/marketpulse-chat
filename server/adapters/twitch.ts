@@ -55,6 +55,8 @@ export function createTwitchAdapter(channel: string, emit: Emit, status: StatusF
       id: tags.id ?? `tw_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       platform: "twitch",
       channel: chan,
+      channelId: tags["room-id"] ? String(tags["room-id"]) : undefined,
+      authorId: tags["user-id"] ? String(tags["user-id"]) : undefined,
       username: tags.username ?? "unknown",
       displayName: tags["display-name"] ?? tags.username ?? "unknown",
       color: tags.color ?? undefined,

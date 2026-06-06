@@ -7,7 +7,7 @@ import { ChatFeed } from "@/components/ChatFeed";
 import { HypePanel } from "@/components/HypePanel";
 import { ConnectModal } from "@/components/ConnectModal";
 import { Composer } from "@/components/Composer";
-import { consumeTwitchRedirect, getStoredTwitchAuth, type TwitchAuth } from "@/lib/twitchAuth";
+import { consumeTwitchRedirect, getStoredTwitchAuth, twitchClientId, type TwitchAuth } from "@/lib/twitchAuth";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -20,7 +20,7 @@ const THEMES = [
 ];
 
 export default function Dashboard() {
-  const { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError } = useChatSocket();
+  const { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
@@ -157,6 +157,30 @@ export default function Dashboard() {
     },
     [feature, unfeature],
   );
+
+  const handleModerate = useCallback(
+    (action: "delete" | "timeout" | "ban", m: UnifiedMessage) => {
+      if (!auth) return;
+      moderate({
+        action,
+        broadcasterId: m.channelId ?? "",
+        moderatorId: auth.userId,
+        targetUserId: m.authorId,
+        messageId: m.id,
+        durationSec: action === "timeout" ? 600 : undefined,
+        token: auth.token,
+        clientId: twitchClientId(),
+      });
+    },
+    [auth, moderate],
+  );
+
+  // Auto-dismiss the moderation toast.
+  useEffect(() => {
+    if (!modResult) return;
+    const t = setTimeout(() => clearModResult(), 3500);
+    return () => clearTimeout(t);
+  }, [modResult, clearModResult]);
 
   const connectedCount = [twitch, kick, x, youtube].filter(Boolean).length;
 
@@ -322,7 +346,14 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="min-h-0 flex-1 border-t border-white/5">
-            <ChatFeed messages={filtered} paused={paused} highlight={highlightList} onFeature={handleFeature} />
+            <ChatFeed
+              messages={filtered}
+              paused={paused}
+              highlight={highlightList}
+              onFeature={handleFeature}
+              canModerate={!!auth}
+              onModerate={handleModerate}
+            />
           </div>
           <Composer
             channel={twitch.trim() || undefined}
@@ -347,8 +378,27 @@ export default function Dashboard() {
         onClose={() => setConnectOpen(false)}
         onApply={handleApply}
       />
+
+      {modResult && (
+        <div
+          className={`pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 animate-slide-in rounded-lg px-4 py-2 text-sm font-semibold shadow-xl ring-1 ${
+            modResult.ok
+              ? "bg-emerald-600/90 text-white ring-emerald-400/50"
+              : "bg-red-600/90 text-white ring-red-400/50"
+          }`}
+        >
+          {modResult.ok ? modLabel(modResult.action) : `⚠ ${modResult.error ?? "Action failed"}`}
+        </div>
+      )}
     </main>
   );
+}
+
+function modLabel(action?: string) {
+  if (action === "delete") return "🗑 Message deleted";
+  if (action === "timeout") return "⏳ User timed out 10 min";
+  if (action === "ban") return "⛔ User banned";
+  return "✓ Done";
 }
 
 function dotColor(state: StatusMap[Platform]) {
