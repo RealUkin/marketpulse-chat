@@ -39,16 +39,18 @@ function renderBody(m: UnifiedMessage): ReactNode {
   return renderText(m.text, tickers);
 }
 
-function Row({ m }: { m: UnifiedMessage }) {
+function Row({ m, highlight }: { m: UnifiedMessage; highlight: string[] }) {
   const meta = PLATFORM_META[m.platform];
   const scam = m.intelligence?.risk === "scam";
   const userColor = m.color ?? meta.color;
   const initial = (m.displayName || "?").charAt(0).toUpperCase();
+  const hit =
+    !scam && highlight.length > 0 && highlight.some((k) => m.text.toLowerCase().includes(k));
 
   return (
     <div
       className={`group flex items-start gap-3 px-4 py-1.5 transition-colors animate-slide-in hover:bg-white/[0.035] ${
-        scam ? "bg-red-950/30" : ""
+        scam ? "bg-red-950/30" : hit ? "bg-accent/[0.08] ring-1 ring-inset ring-accent/25" : ""
       }`}
     >
       {/* Avatar with platform badge */}

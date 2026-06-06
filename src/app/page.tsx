@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChannelConfig, Platform } from "@shared/types";
 import { useChatSocket, type StatusMap } from "@/lib/useChatSocket";
 import { PLATFORM_META } from "@/lib/platform";
@@ -30,6 +30,11 @@ export default function Dashboard() {
   const [themeIdx, setThemeIdx] = useState(0);
   const [showHype, setShowHype] = useState(true);
   const [connectOpen, setConnectOpen] = useState(false);
+  const [highlight, setHighlight] = useState("");
+  const [soundOn, setSoundOn] = useState(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const lastBeepRef = useRef(0);
+  const prevLenRef = useRef(0);
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem("mp-theme"));
@@ -48,6 +53,58 @@ export default function Dashboard() {
         (q === "" || m.text.toLowerCase().includes(q) || m.displayName.toLowerCase().includes(q)),
     );
   }, [messages, filters, search]);
+
+  const highlightList = useMemo(
+    () => highlight.toLowerCase().split(",").map((s) => s.trim()).filter(Boolean),
+    [highlight],
+  );
+
+  // Sound on new message (throttled), opt-in.
+  useEffect(() => {
+    if (!soundOn || paused) {
+      prevLenRef.current = messages.length;
+      return;
+    }
+    if (messages.length > prevLenRef.current && audioCtxRef.current) {
+      const now = Date.now();
+      if (now - lastBeepRef.current > 600) {
+        lastBeepRef.current = now;
+        try {
+          const ctx = audioCtxRef.current;
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "sine";
+          o.frequency.value = 880;
+          g.gain.value = 0.04;
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.start();
+          o.stop(ctx.currentTime + 0.05);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    prevLenRef.current = messages.length;
+  }, [messages.length, soundOn, paused]);
+
+  const toggleSound = () => {
+    setSoundOn((v) => {
+      const next = !v;
+      if (next && !audioCtxRef.current) {
+        try {
+          const Ctx =
+            window.AudioContext ||
+            (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          audioCtxRef.current = new Ctx();
+        } catch {
+          /* ignore */
+        }
+      }
+      audioCtxRef.current?.resume?.();
+      return next;
+    });
+  };
 
   const channelsFromState = (): ChannelConfig => ({
     twitch: twitch.trim() || undefined,
@@ -191,8 +248,24 @@ export default function Dashboard() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search messages…"
-            className="w-44 rounded-lg bg-white/5 px-3 py-1.5 text-sm outline-none ring-1 ring-white/5 transition focus:ring-2 focus:ring-accent/60"
+            className="w-40 rounded-lg bg-white/5 px-3 py-1.5 text-sm outline-none ring-1 ring-white/5 transition focus:ring-2 focus:ring-accent/60"
           />
+          <input
+            value={highlight}
+            onChange={(e) => setHighlight(e.target.value)}
+            placeholder="highlight…"
+            title="Highlight messages containing these comma-separated keywords"
+            className="w-28 rounded-lg bg-white/5 px-3 py-1.5 text-sm outline-none ring-1 ring-white/5 transition focus:ring-2 focus:ring-accent/60"
+          />
+          <button
+            onClick={toggleSound}
+            title="Play a sound on new messages"
+            className={`rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
+              soundOn ? "bg-accent/15 text-accent ring-accent/30" : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
+            }`}
+          >
+            {soundOn ? "🔔" : "🔕"}
+          </button>
           <button
             onClick={togglePause}
             className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs ring-1 ring-white/5 transition hover:bg-white/10"
@@ -221,7 +294,7 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="min-h-0 flex-1 border-t border-white/5">
-            <ChatFeed messages={filtered} paused={paused} />
+            <ChatFeed messages={filtered} paused={paused} highlight={highlightList} />
           </div>
         </section>
         {showHype && (

@@ -3,7 +3,15 @@ import { useEffect, useRef } from "react";
 import type { UnifiedMessage } from "@shared/types";
 import { MessageRow } from "@/components/MessageRow";
 
-export function ChatFeed({ messages, paused }: { messages: UnifiedMessage[]; paused: boolean }) {
+export function ChatFeed({
+  messages,
+  paused,
+  highlight,
+}: {
+  messages: UnifiedMessage[];
+  paused: boolean;
+  highlight: string[];
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -21,7 +29,7 @@ export function ChatFeed({ messages, paused }: { messages: UnifiedMessage[]; pau
       ) : (
         <div className="flex flex-col py-2">
           {messages.map((m) => (
-            <MessageRow key={m.id} m={m} />
+            <MessageRow key={m.id} m={m} highlight={highlight} />
           ))}
         </div>
       )}
