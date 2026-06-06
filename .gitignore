@@ -33,3 +33,6 @@ yarn-error.log*
 # X burner-account session — NEVER commit credentials/cookies
 /x-auth.json
 /.auth
+
+# local screenshot util (dev only)
+/_shot.mjs

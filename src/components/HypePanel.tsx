@@ -43,10 +43,10 @@ export function HypePanel({ messages, markets }: { messages: UnifiedMessage[]; m
   const s = useMemo(() => computeStats(messages), [messages]);
 
   return (
-    <div className="flex flex-col gap-3 p-3">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-bold">🔥 Hype Intelligence</span>
-        <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-accent">
+    <div className="flex flex-col gap-3 p-4">
+      <div className="flex items-center gap-2 px-0.5">
+        <span className="text-[13px] font-bold tracking-tight">🔥 Hype Intelligence</span>
+        <span className="rounded-full bg-accent/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-accent ring-1 ring-accent/30">
           live
         </span>
       </div>
@@ -163,8 +163,8 @@ export function HypePanel({ messages, markets }: { messages: UnifiedMessage[]; m
 
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-lg border border-ink-800 bg-ink-850 p-3">
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{title}</div>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3.5 shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]">
+      <div className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">{title}</div>
       {children}
     </div>
   );

@@ -29,7 +29,7 @@ function renderBody(m: UnifiedMessage): ReactNode {
           alt={p.name}
           title={p.name}
           loading="lazy"
-          className="mx-0.5 inline-block h-5 w-auto align-text-bottom"
+          className="-my-1 mx-0.5 inline-block h-6 w-auto align-text-bottom"
         />
       ) : (
         <span key={i}>{renderText(p.v, tickers)}</span>
@@ -41,53 +41,71 @@ function renderBody(m: UnifiedMessage): ReactNode {
 
 function Row({ m }: { m: UnifiedMessage }) {
   const meta = PLATFORM_META[m.platform];
+  const scam = m.intelligence?.risk === "scam";
+  const userColor = m.color ?? meta.color;
+  const initial = (m.displayName || "?").charAt(0).toUpperCase();
+
   return (
     <div
-      className={`group flex animate-slide-in gap-2.5 border-l-2 px-3 py-1.5 hover:bg-ink-850/70 ${
-        m.intelligence?.risk === "scam" ? "bg-red-950/30" : ""
+      className={`group flex items-start gap-3 px-4 py-1.5 transition-colors animate-slide-in hover:bg-white/[0.035] ${
+        scam ? "bg-red-950/30" : ""
       }`}
-      style={{ borderColor: meta.color }}
     >
-      <span
-        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[11px] font-bold"
-        style={{ backgroundColor: meta.color, color: meta.fg }}
-        title={meta.label}
-      >
-        {meta.letter}
-      </span>
-      <div className="min-w-0 flex-1 text-[14px] leading-snug">
-        {m.intelligence?.risk === "scam" && (
-          <span
-            className="mr-1 rounded bg-red-500/25 px-1 align-middle text-[10px] font-bold uppercase text-red-300 ring-1 ring-red-500/50"
-            title="Flagged: possible scam / phishing"
+      {/* Avatar with platform badge */}
+      <div className="relative mt-0.5 shrink-0">
+        {m.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={m.avatarUrl}
+            alt=""
+            className="h-7 w-7 rounded-full border-2 object-cover"
+            style={{ borderColor: `${meta.color}aa` }}
+          />
+        ) : (
+          <div
+            className="grid h-7 w-7 place-items-center rounded-full border-2 text-[12px] font-bold"
+            style={{ backgroundColor: `${userColor}26`, color: userColor, borderColor: `${meta.color}aa` }}
           >
-            ⚠ scam?
-          </span>
+            {initial}
+          </div>
         )}
-        {m.intelligence?.risk === "link" && (
-          <span
-            className="mr-1 align-middle text-[11px] text-amber-400/80"
-            title="Contains a link or wallet/contract address"
-          >
-            🔗
-          </span>
-        )}
-        {m.badges.length > 0 && (
-          <span className="mr-1 inline-flex flex-wrap items-center gap-1 align-middle">
-            {m.badges.map((b, i) => (
-              <Badge key={i} badge={b} />
-            ))}
-          </span>
-        )}
-        <span className="font-semibold" style={{ color: m.color ?? meta.color }}>
-          {m.displayName}
+        <span
+          className="absolute -bottom-1 -right-1 grid h-3.5 w-3.5 place-items-center rounded-full text-[7px] font-black ring-2 ring-ink-950"
+          style={{ backgroundColor: meta.color, color: meta.fg }}
+          title={meta.label}
+        >
+          {meta.letter.slice(0, 1)}
         </span>
-        <span className="text-zinc-500">: </span>
-        <span className="break-words text-zinc-200">{renderBody(m)}</span>
       </div>
-      <span className="mt-0.5 shrink-0 self-start text-[10px] tabular-nums text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100">
-        {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-      </span>
+
+      {/* Body */}
+      <div className="min-w-0 flex-1 text-[14px] leading-snug">
+        <div className="flex items-center gap-1.5">
+          {scam && (
+            <span
+              className="rounded bg-red-500/25 px-1 text-[10px] font-bold uppercase leading-none text-red-300 ring-1 ring-red-500/50"
+              title="Flagged: possible scam / phishing"
+            >
+              ⚠ scam?
+            </span>
+          )}
+          {m.intelligence?.risk === "link" && (
+            <span className="text-[11px] text-amber-400/80" title="Contains a link or wallet/contract address">
+              🔗
+            </span>
+          )}
+          {m.badges.map((b, i) => (
+            <Badge key={i} badge={b} />
+          ))}
+          <span className="truncate font-semibold" style={{ color: userColor }}>
+            {m.displayName}
+          </span>
+          <span className="ml-auto shrink-0 pl-2 text-[10px] tabular-nums text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100">
+            {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
+        <div className="break-words text-[14px] text-zinc-200">{renderBody(m)}</div>
+      </div>
     </div>
   );
 }

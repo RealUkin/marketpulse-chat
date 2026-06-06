@@ -192,7 +192,9 @@ export default function Dashboard() {
               <span className={`h-1.5 w-1.5 rounded-full ${paused ? "bg-amber-400" : "bg-green-500 animate-pulse-dot"}`} />
               {filtered.length} messages {paused ? "· paused" : "· live"}
             </span>
-            <span className="uppercase tracking-wide text-zinc-600">{socketState}</span>
+            <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-zinc-500 ring-1 ring-white/5">
+            {socketState}
+          </span>
           </div>
           <div className="min-h-0 flex-1 border-t border-white/5">
             <ChatFeed messages={filtered} paused={paused} />
