@@ -10,7 +10,7 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
 
 ## ✨ Features
 
-- **Unified real-time feed** — Twitch, X, and Kick in one stream, each message tagged with a colored source badge (Twitch purple `#9146FF`, Kick green `#53FC18`, X mono).
+- **Unified real-time feed** — Twitch, X, Kick, and YouTube in one stream, each message tagged with a colored source badge (Twitch purple, Kick green, X mono, YouTube red) and a per-user avatar.
 - **Normalized identity & roles** — broadcaster / mod / VIP / subscriber (with months) / member / verified, mapped to one consistent badge system across every platform.
 - **Full emote support** — native emotes + **channel sub emotes** + **7TV / BTTV / FFZ** (Twitch) and **7TV** (Kick) third-party emotes + YouTube emojis, all rendered as images. Plus an **emote "pop"** effect in the overlay when chat spams.
 - **🔥 Hype Intelligence panel** (built for a trading audience):
@@ -19,8 +19,13 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
   - **Hype velocity** (messages/min) and most-active users
   - **Unanswered questions** queue, weighted by user role
 - **💸 Live Polymarket odds** — pulls active markets from Polymarket's public API and shows live Yes/No probabilities (the challenge is *presented by Polymarket*).
-- **🎥 OBS overlay mode** — a transparent `/overlay` route built as a browser source.
-- **🛡️ Demo Mode** — realistic synthetic chat across all three platforms, so the app works **instantly with zero API keys** (and never breaks on camera).
+- **Crypto = optional** — the whole Hype Intelligence panel toggles off for a clean, non-crypto-friendly chat. Most streamers aren't traders; the chat is the hero.
+- **🛡️ Crypto scam/link defense** — flags phishing links, wallet/contract addresses, and scam phrases (free-nitro, "double your", airdrop / connect-wallet) with a ⚠ marker + a Safety panel. Nobody else protects crypto chats.
+- **🎛️ Connect-platforms modal** — toggle each platform on/off and add your channel (your multistream picker). No login needed to read chat — the key edge over Restream.
+- **⭐ Feature-on-stream** — star any message to broadcast it as a large featured banner on the OBS overlay.
+- **Creator controls** — per-platform filters, search, keyword/@mention highlight, sound-on-new-message, pause/clear, and a 5-preset accent **theme switcher**.
+- **🎥 OBS overlay mode** — a transparent `/overlay` route (browser source) with emote "pop" + the featured banner.
+- **🧪 Demo Mode** — realistic synthetic chat across all four platforms, so the app works **instantly with zero API keys** (and never breaks on camera).
 - **Production-grade plumbing** — throttled batch rendering, capped sliding-window buffer, exponential-backoff reconnect — smooth even under heavy chat.
 
 ## 🏗️ Architecture
