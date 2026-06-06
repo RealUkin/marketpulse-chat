@@ -9,6 +9,7 @@ import { ConnectModal } from "@/components/ConnectModal";
 import { Composer } from "@/components/Composer";
 import { consumeTwitchRedirect, getStoredTwitchAuth, twitchClientId, type TwitchAuth } from "@/lib/twitchAuth";
 import { isBot } from "@/lib/bots";
+import { downloadMomentCard } from "@/lib/momentCard";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -70,6 +71,12 @@ export default function Dashboard() {
     () => highlight.toLowerCase().split(",").map((s) => s.trim()).filter(Boolean),
     [highlight],
   );
+
+  // Chat-explosion detector — pulses the "capture moment" button when chat pops.
+  const hot = useMemo(() => {
+    const now = Date.now();
+    return messages.filter((m) => now - m.timestamp < 15000).length >= 12;
+  }, [messages]);
 
   // Sound on new message (throttled), opt-in.
   useEffect(() => {
@@ -370,6 +377,17 @@ export default function Dashboard() {
             className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs ring-1 ring-white/5 transition hover:bg-white/10"
           >
             {paused ? "▶ Resume" : "⏸ Pause"}
+          </button>
+          <button
+            onClick={() => downloadMomentCard(filtered, THEMES[themeIdx].rgb)}
+            title="Export a shareable 9:16 'chat moment' card for X / TikTok"
+            className={`rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
+              hot
+                ? "bg-accent/20 text-accent ring-accent/40 animate-pulse"
+                : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
+            }`}
+          >
+            📸 {hot ? "Moment 🔥" : "Moment"}
           </button>
           <button
             onClick={clear}
