@@ -21,7 +21,7 @@ const THEMES = [
 ];
 
 export default function Dashboard() {
-  const { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult } = useChatSocket();
+  const { messages, socketState, status, markets, prices, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
@@ -424,7 +424,7 @@ export default function Dashboard() {
         </section>
         {showHype && (
           <aside className="scrollbar-thin hidden w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-ink-900/40 lg:block">
-            <HypePanel messages={messages} markets={markets} />
+            <HypePanel messages={messages} markets={markets} prices={prices} />
           </aside>
         )}
       </div>

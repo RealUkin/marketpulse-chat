@@ -107,12 +107,19 @@ export interface MarketInfo {
   url: string;
 }
 
+export interface PriceInfo {
+  symbol: string; // e.g. "SOL"
+  price: number; // USD
+  change24h: number; // percent
+}
+
 // Server -> Client
 export type ServerEvent =
   | { type: "hello"; ok: true }
   | { type: "message"; data: UnifiedMessage }
   | { type: "status"; platform: Platform; state: ConnectionState; detail?: string }
   | { type: "markets"; data: MarketInfo[] }
+  | { type: "prices"; data: PriceInfo[] }
   | { type: "featured"; data: UnifiedMessage | null }
   | { type: "sendResult"; ok: boolean; error?: string }
   | { type: "modResult"; ok: boolean; action?: string; error?: string };

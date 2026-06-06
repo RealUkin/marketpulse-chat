@@ -12,6 +12,7 @@ import type { Adapter } from "./adapters/types";
 import { fetchMarkets } from "./polymarket";
 import { sendTwitchMessage } from "./send";
 import { moderateTwitch } from "./moderate";
+import { fetchPrices } from "./coingecko";
 
 const PORT = Number(process.env.WS_PORT ?? 3001);
 
@@ -38,9 +39,18 @@ class Session {
     if (data.length) this.send({ type: "markets", data });
   };
 
+  private pushPrices = async () => {
+    const data = await fetchPrices();
+    if (data.length) this.send({ type: "prices", data });
+  };
+
   private startMarkets() {
     void this.pushMarkets();
-    this.marketsTimer = setInterval(() => void this.pushMarkets(), 90_000);
+    void this.pushPrices();
+    this.marketsTimer = setInterval(() => {
+      void this.pushMarkets();
+      void this.pushPrices();
+    }, 90_000);
   }
 
   start(channels: ChannelConfig, demo: boolean) {

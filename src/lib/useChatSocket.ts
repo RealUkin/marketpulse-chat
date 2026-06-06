@@ -4,6 +4,7 @@ import type {
   ChannelConfig,
   ConnectionState,
   MarketInfo,
+  PriceInfo,
   Platform,
   ServerEvent,
   UnifiedMessage,
@@ -22,6 +23,7 @@ export function useChatSocket() {
   const [socketState, setSocketState] = useState<SocketState>("connecting");
   const [status, setStatus] = useState<StatusMap>(IDLE_STATUS);
   const [markets, setMarkets] = useState<MarketInfo[]>([]);
+  const [prices, setPrices] = useState<PriceInfo[]>([]);
   const [featured, setFeatured] = useState<UnifiedMessage | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [modResult, setModResult] = useState<{ ok: boolean; action?: string; error?: string } | null>(null);
@@ -79,6 +81,7 @@ export function useChatSocket() {
       if (ev.type === "message") bufferRef.current.push(ev.data);
       else if (ev.type === "status") setStatus((s) => ({ ...s, [ev.platform]: ev.state }));
       else if (ev.type === "markets") setMarkets(ev.data);
+      else if (ev.type === "prices") setPrices(ev.data);
       else if (ev.type === "featured") setFeatured(ev.data);
       else if (ev.type === "sendResult") setSendError(ev.ok ? null : ev.error ?? "Send failed");
       else if (ev.type === "modResult") setModResult({ ok: ev.ok, action: ev.action, error: ev.error });
@@ -183,6 +186,7 @@ export function useChatSocket() {
     socketState,
     status,
     markets,
+    prices,
     featured,
     subscribe,
     setPaused,

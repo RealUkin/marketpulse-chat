@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, type ReactNode } from "react";
-import type { MarketInfo, UnifiedMessage } from "@shared/types";
+import type { MarketInfo, PriceInfo, UnifiedMessage } from "@shared/types";
 
 const pct = (n: number, d: number) => Math.round((n / (d || 1)) * 100);
 
@@ -39,8 +39,29 @@ function computeStats(messages: UnifiedMessage[]) {
   };
 }
 
-export function HypePanel({ messages, markets }: { messages: UnifiedMessage[]; markets: MarketInfo[] }) {
+export function HypePanel({
+  messages,
+  markets,
+  prices,
+}: {
+  messages: UnifiedMessage[];
+  markets: MarketInfo[];
+  prices: PriceInfo[];
+}) {
   const s = useMemo(() => computeStats(messages), [messages]);
+  const priceMap = useMemo(
+    () => Object.fromEntries(prices.map((p) => [p.symbol.toUpperCase(), p])) as Record<string, PriceInfo>,
+    [prices],
+  );
+  const divergence = useMemo(() => {
+    for (const [t] of s.topTickers) {
+      const p = priceMap[t.replace(/^\$/, "").toUpperCase()];
+      if (!p) continue;
+      if (p.change24h <= -3) return `🔥 Chat's loud on ${t} while it's ${p.change24h.toFixed(1)}% (24h) — divergence.`;
+      if (p.change24h >= 3) return `📈 ${t} is running +${p.change24h.toFixed(1)}% (24h) and chat's on it.`;
+    }
+    return null;
+  }, [s.topTickers, priceMap]);
 
   return (
     <div className="flex flex-col gap-3 p-4">
@@ -74,23 +95,41 @@ export function HypePanel({ messages, markets }: { messages: UnifiedMessage[]; m
         </Card>
       )}
 
-      <Card title="Top Tickers">
+      <Card title="📈 Chat × Market">
         {s.topTickers.length === 0 ? (
           <Empty />
         ) : (
-          <div className="flex flex-col gap-1.5">
-            {s.topTickers.map(([t, c]) => (
-              <div key={t} className="flex items-center gap-2">
-                <span className="w-14 font-mono text-sm font-semibold text-gold">{t}</span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-800">
-                  <div
-                    className="h-full rounded-full bg-gold"
-                    style={{ width: `${Math.min(100, (c / s.maxTicker) * 100)}%` }}
-                  />
+          <div className="flex flex-col gap-2">
+            {s.topTickers.slice(0, 5).map(([t, c]) => {
+              const p = priceMap[t.replace(/^\$/, "").toUpperCase()];
+              return (
+                <div key={t} className="flex items-center gap-2">
+                  <span className="w-12 shrink-0 font-mono text-sm font-semibold text-gold">{t}</span>
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-800">
+                    <div
+                      className="h-full rounded-full bg-gold"
+                      style={{ width: `${Math.min(100, (c / s.maxTicker) * 100)}%` }}
+                    />
+                  </div>
+                  {p ? (
+                    <span className="flex shrink-0 items-baseline gap-1 tabular-nums">
+                      <span className="text-[11px] text-zinc-300">{fmtPrice(p.price)}</span>
+                      <span className={`text-[11px] ${p.change24h >= 0 ? "text-bull" : "text-bear"}`}>
+                        {p.change24h >= 0 ? "▲" : "▼"}
+                        {Math.abs(p.change24h).toFixed(1)}%
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="w-6 shrink-0 text-right text-xs text-zinc-500">{c}</span>
+                  )}
                 </div>
-                <span className="w-6 text-right text-xs text-zinc-500">{c}</span>
+              );
+            })}
+            {divergence && (
+              <div className="mt-1 rounded-lg bg-accent/10 px-2 py-1.5 text-[11px] leading-snug text-accent ring-1 ring-accent/20">
+                {divergence}
               </div>
-            ))}
+            )}
           </div>
         )}
       </Card>
@@ -171,3 +210,10 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 }
 
 const Empty = () => <div className="text-xs text-zinc-600">—</div>;
+
+function fmtPrice(n: number): string {
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)}k`;
+  if (n >= 1) return `$${n.toFixed(2)}`;
+  if (n >= 0.01) return `$${n.toFixed(3)}`;
+  return `$${n.toPrecision(2)}`;
+}
