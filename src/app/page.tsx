@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [paused, setPausedState] = useState(false);
   const [themeIdx, setThemeIdx] = useState(0);
+  const [showHype, setShowHype] = useState(true);
 
   // Apply + persist the accent theme.
   useEffect(() => {
@@ -163,6 +164,17 @@ export default function Dashboard() {
         ))}
 
         <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => setShowHype((v) => !v)}
+            title="Toggle the crypto Hype Intelligence panel (optional)"
+            className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
+              showHype
+                ? "bg-accent/15 text-accent ring-accent/30"
+                : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
+            }`}
+          >
+            📊 Hype
+          </button>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -200,9 +212,11 @@ export default function Dashboard() {
             <ChatFeed messages={filtered} paused={paused} />
           </div>
         </section>
-        <aside className="scrollbar-thin hidden w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-ink-900/40 lg:block">
-          <HypePanel messages={messages} markets={markets} />
-        </aside>
+        {showHype && (
+          <aside className="scrollbar-thin hidden w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-ink-900/40 lg:block">
+            <HypePanel messages={messages} markets={markets} />
+          </aside>
+        )}
       </div>
     </main>
   );
