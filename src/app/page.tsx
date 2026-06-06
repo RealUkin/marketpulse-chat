@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import type { Platform } from "@shared/types";
+import type { ChannelConfig, Platform } from "@shared/types";
 import { useChatSocket, type StatusMap } from "@/lib/useChatSocket";
 import { PLATFORM_META } from "@/lib/platform";
 import { ChatFeed } from "@/components/ChatFeed";
 import { HypePanel } from "@/components/HypePanel";
+import { ConnectModal } from "@/components/ConnectModal";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -28,8 +29,8 @@ export default function Dashboard() {
   const [paused, setPausedState] = useState(false);
   const [themeIdx, setThemeIdx] = useState(0);
   const [showHype, setShowHype] = useState(true);
+  const [connectOpen, setConnectOpen] = useState(false);
 
-  // Apply + persist the accent theme.
   useEffect(() => {
     const saved = Number(window.localStorage.getItem("mp-theme"));
     if (!Number.isNaN(saved) && THEMES[saved]) setThemeIdx(saved);
@@ -48,6 +49,27 @@ export default function Dashboard() {
     );
   }, [messages, filters, search]);
 
+  const channelsFromState = (): ChannelConfig => ({
+    twitch: twitch.trim() || undefined,
+    kick: kick.trim() || undefined,
+    x: x.trim() || undefined,
+    youtube: youtube.trim() || undefined,
+  });
+
+  const handleApply = (channels: ChannelConfig, demoFlag: boolean) => {
+    setTwitch(channels.twitch ?? "");
+    setKick(channels.kick ?? "");
+    setX(channels.x ?? "");
+    setYoutube(channels.youtube ?? "");
+    setDemo(demoFlag);
+    subscribe(channels, demoFlag);
+  };
+
+  const toggleDemo = (v: boolean) => {
+    setDemo(v);
+    subscribe(channelsFromState(), v);
+  };
+
   const toggleFilter = (p: Platform) =>
     setFilters((prev) => {
       const n = new Set(prev);
@@ -62,16 +84,7 @@ export default function Dashboard() {
     setPaused(next);
   };
 
-  const onConnect = () =>
-    subscribe(
-      {
-        twitch: twitch.trim() || undefined,
-        kick: kick.trim() || undefined,
-        x: x.trim() || undefined,
-        youtube: youtube.trim() || undefined,
-      },
-      demo,
-    );
+  const connectedCount = [twitch, kick, x, youtube].filter(Boolean).length;
 
   return (
     <main className="flex h-screen flex-col bg-ink-950">
@@ -123,26 +136,24 @@ export default function Dashboard() {
 
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-ink-900/50 px-5 py-2.5 text-sm">
-        <ChannelInput value={twitch} onChange={setTwitch} placeholder="twitch channel" accent="#9146FF" />
-        <ChannelInput value={kick} onChange={setKick} placeholder="kick channel" accent="#53FC18" />
-        <ChannelInput value={youtube} onChange={setYoutube} placeholder="youtube id/url" accent="#FF0033" />
-        <ChannelInput value={x} onChange={setX} placeholder="x broadcast url/id" accent="#E7E9EA" />
-
+        <button
+          onClick={() => setConnectOpen(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-1.5 font-semibold text-white shadow-lg shadow-accent/25 transition hover:opacity-90"
+        >
+          <span className="text-base leading-none">＋</span> Connect platforms
+        </button>
+        {connectedCount > 0 && (
+          <span className="text-[11px] text-zinc-500">{connectedCount} connected</span>
+        )}
         <label className="flex cursor-pointer select-none items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 ring-1 ring-white/5">
           <input
             type="checkbox"
             checked={demo}
-            onChange={(e) => setDemo(e.target.checked)}
+            onChange={(e) => toggleDemo(e.target.checked)}
             className="accent-accent"
           />
           <span className={demo ? "text-accent" : "text-zinc-400"}>Demo</span>
         </label>
-        <button
-          onClick={onConnect}
-          className="rounded-lg bg-accent px-3.5 py-1.5 font-semibold text-white shadow-lg shadow-accent/25 transition hover:opacity-90"
-        >
-          Connect
-        </button>
 
         <div className="mx-1 h-5 w-px bg-white/10" />
 
@@ -158,6 +169,7 @@ export default function Dashboard() {
                 ? { backgroundColor: `${PLATFORM_META[p].color}22`, color: PLATFORM_META[p].color }
                 : undefined
             }
+            title={`Toggle ${PLATFORM_META[p].label} in the feed`}
           >
             {PLATFORM_META[p].label}
           </button>
@@ -205,8 +217,8 @@ export default function Dashboard() {
               {filtered.length} messages {paused ? "· paused" : "· live"}
             </span>
             <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-zinc-500 ring-1 ring-white/5">
-            {socketState}
-          </span>
+              {socketState}
+            </span>
           </div>
           <div className="min-h-0 flex-1 border-t border-white/5">
             <ChatFeed messages={filtered} paused={paused} />
@@ -218,6 +230,14 @@ export default function Dashboard() {
           </aside>
         )}
       </div>
+
+      <ConnectModal
+        open={connectOpen}
+        initial={channelsFromState()}
+        demo={demo}
+        onClose={() => setConnectOpen(false)}
+        onApply={handleApply}
+      />
     </main>
   );
 }
@@ -235,28 +255,4 @@ function dotColor(state: StatusMap[Platform]) {
     default:
       return "bg-zinc-700";
   }
-}
-
-function ChannelInput({
-  value,
-  onChange,
-  placeholder,
-  accent,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  accent: string;
-}) {
-  return (
-    <div className="flex items-center gap-1.5 rounded-lg bg-white/5 pl-2 pr-1 ring-1 ring-white/5 transition focus-within:ring-2 focus-within:ring-accent/60">
-      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: accent }} />
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-32 bg-transparent py-1.5 text-sm outline-none placeholder:text-zinc-600"
-      />
-    </div>
-  );
 }
