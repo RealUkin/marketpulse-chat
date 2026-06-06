@@ -71,6 +71,8 @@ export interface ChannelConfig {
 // Client -> Server
 export type ClientCommand =
   | { type: "subscribe"; channels: ChannelConfig; demo: boolean }
+  | { type: "feature"; data: UnifiedMessage }
+  | { type: "unfeature" }
   | { type: "ping" };
 
 export interface MarketInfo {
@@ -87,4 +89,5 @@ export type ServerEvent =
   | { type: "hello"; ok: true }
   | { type: "message"; data: UnifiedMessage }
   | { type: "status"; platform: Platform; state: ConnectionState; detail?: string }
-  | { type: "markets"; data: MarketInfo[] };
+  | { type: "markets"; data: MarketInfo[] }
+  | { type: "featured"; data: UnifiedMessage | null };

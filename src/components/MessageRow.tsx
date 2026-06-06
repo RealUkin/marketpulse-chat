@@ -39,7 +39,15 @@ function renderBody(m: UnifiedMessage): ReactNode {
   return renderText(m.text, tickers);
 }
 
-function Row({ m, highlight }: { m: UnifiedMessage; highlight: string[] }) {
+function Row({
+  m,
+  highlight,
+  onFeature,
+}: {
+  m: UnifiedMessage;
+  highlight: string[];
+  onFeature?: (m: UnifiedMessage) => void;
+}) {
   const meta = PLATFORM_META[m.platform];
   const scam = m.intelligence?.risk === "scam";
   const userColor = m.color ?? meta.color;
@@ -105,6 +113,15 @@ function Row({ m, highlight }: { m: UnifiedMessage; highlight: string[] }) {
           <span className="ml-auto shrink-0 pl-2 text-[10px] tabular-nums text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100">
             {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
+          {onFeature && (
+            <button
+              onClick={() => onFeature(m)}
+              title="Feature this message on stream"
+              className="shrink-0 pl-1 text-xs text-zinc-600 opacity-0 transition hover:text-accent group-hover:opacity-100"
+            >
+              ★
+            </button>
+          )}
         </div>
         <div className="break-words text-[14px] text-zinc-200">{renderBody(m)}</div>
       </div>

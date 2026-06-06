@@ -72,6 +72,12 @@ class Session {
 
 const wss = new WebSocketServer({ port: PORT });
 
+// Broadcast to every connected client (used for "feature this message" → overlay).
+function broadcast(ev: ServerEvent) {
+  const data = JSON.stringify(ev);
+  for (const c of wss.clients) if (c.readyState === WebSocket.OPEN) c.send(data);
+}
+
 wss.on("connection", (ws) => {
   const session = new Session(ws);
   ws.send(JSON.stringify({ type: "hello", ok: true }));
@@ -84,6 +90,8 @@ wss.on("connection", (ws) => {
       return;
     }
     if (cmd.type === "subscribe") session.start(cmd.channels, cmd.demo);
+    else if (cmd.type === "feature") broadcast({ type: "featured", data: cmd.data });
+    else if (cmd.type === "unfeature") broadcast({ type: "featured", data: null });
   });
 
   ws.on("close", () => session.stopAll());

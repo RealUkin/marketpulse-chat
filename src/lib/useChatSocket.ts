@@ -22,6 +22,7 @@ export function useChatSocket() {
   const [socketState, setSocketState] = useState<SocketState>("connecting");
   const [status, setStatus] = useState<StatusMap>(IDLE_STATUS);
   const [markets, setMarkets] = useState<MarketInfo[]>([]);
+  const [featured, setFeatured] = useState<UnifiedMessage | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
@@ -67,6 +68,7 @@ export function useChatSocket() {
       if (ev.type === "message") bufferRef.current.push(ev.data);
       else if (ev.type === "status") setStatus((s) => ({ ...s, [ev.platform]: ev.state }));
       else if (ev.type === "markets") setMarkets(ev.data);
+      else if (ev.type === "featured") setFeatured(ev.data);
     };
 
     ws.onerror = () => ws.close();
@@ -118,5 +120,15 @@ export function useChatSocket() {
     bufferRef.current = [];
   }, []);
 
-  return { messages, socketState, status, markets, subscribe, setPaused, clear };
+  const feature = useCallback((m: UnifiedMessage) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "feature", data: m }));
+  }, []);
+
+  const unfeature = useCallback(() => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "unfeature" }));
+  }, []);
+
+  return { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature };
 }

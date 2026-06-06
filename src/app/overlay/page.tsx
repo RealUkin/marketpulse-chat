@@ -8,7 +8,7 @@ import { Badge } from "@/components/Badge";
 // OBS browser-source overlay: transparent background, compact chips, newest at bottom.
 // URL params: ?twitch=<ch>&kick=<ch>&x=<broadcastId>&demo=1&max=18
 export default function Overlay() {
-  const { messages, subscribe } = useChatSocket();
+  const { messages, subscribe, featured } = useChatSocket();
   const [max, setMax] = useState(18);
   const [pops, setPops] = useState<{ id: string; url: string; left: number }[]>([]);
   const comboRef = useRef<Map<string, { n: number; t: number }>>(new Map());
@@ -69,6 +69,31 @@ export default function Overlay() {
 
   return (
     <>
+      {featured && (
+        <div
+          className="pointer-events-none fixed left-1/2 top-6 z-20 w-[min(90%,640px)] -translate-x-1/2 animate-slide-in rounded-2xl border-2 bg-black/80 px-5 py-4 shadow-2xl backdrop-blur"
+          style={{ borderColor: PLATFORM_META[featured.platform].color }}
+        >
+          <div
+            className="mb-1 text-[11px] font-bold uppercase tracking-wider"
+            style={{ color: PLATFORM_META[featured.platform].color }}
+          >
+            ★ Featured message
+          </div>
+          <div
+            className="text-xl font-extrabold"
+            style={{
+              color: featured.color ?? PLATFORM_META[featured.platform].color,
+              textShadow: "0 1px 3px rgba(0,0,0,.9)",
+            }}
+          >
+            {featured.displayName}
+          </div>
+          <div className="mt-0.5 text-lg text-white" style={{ textShadow: "0 1px 3px rgba(0,0,0,.9)" }}>
+            {featured.text}
+          </div>
+        </div>
+      )}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         {pops.map((p) => (
           // eslint-disable-next-line @next/next/no-img-element

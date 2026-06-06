@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { ChannelConfig, Platform } from "@shared/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ChannelConfig, Platform, UnifiedMessage } from "@shared/types";
 import { useChatSocket, type StatusMap } from "@/lib/useChatSocket";
 import { PLATFORM_META } from "@/lib/platform";
 import { ChatFeed } from "@/components/ChatFeed";
@@ -18,7 +18,7 @@ const THEMES = [
 ];
 
 export default function Dashboard() {
-  const { messages, socketState, status, markets, subscribe, setPaused, clear } = useChatSocket();
+  const { messages, socketState, status, markets, featured, subscribe, setPaused, clear, feature, unfeature } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
@@ -140,6 +140,16 @@ export default function Dashboard() {
     setPausedState(next);
     setPaused(next);
   };
+
+  const featureTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleFeature = useCallback(
+    (m: UnifiedMessage) => {
+      feature(m);
+      if (featureTimer.current) clearTimeout(featureTimer.current);
+      featureTimer.current = setTimeout(() => unfeature(), 15000);
+    },
+    [feature, unfeature],
+  );
 
   const connectedCount = [twitch, kick, x, youtube].filter(Boolean).length;
 
@@ -284,6 +294,17 @@ export default function Dashboard() {
       {/* Body */}
       <div className="flex min-h-0 flex-1">
         <section className="flex min-w-0 flex-1 flex-col">
+          {featured && (
+            <div className="flex items-center gap-2 border-b border-accent/30 bg-accent/10 px-4 py-1.5 text-[12px]">
+              <span className="shrink-0 font-semibold text-accent">★ Featured on stream</span>
+              <span className="truncate text-zinc-300">
+                <span className="font-semibold">{featured.displayName}</span>: {featured.text}
+              </span>
+              <button onClick={unfeature} className="ml-auto shrink-0 text-zinc-400 transition hover:text-zinc-200">
+                clear ✕
+              </button>
+            </div>
+          )}
           <div className="flex items-center justify-between px-4 py-2 text-[11px] text-zinc-500">
             <span className="inline-flex items-center gap-1.5">
               <span className={`h-1.5 w-1.5 rounded-full ${paused ? "bg-amber-400" : "bg-green-500 animate-pulse-dot"}`} />
@@ -294,7 +315,7 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="min-h-0 flex-1 border-t border-white/5">
-            <ChatFeed messages={filtered} paused={paused} highlight={highlightList} />
+            <ChatFeed messages={filtered} paused={paused} highlight={highlightList} onFeature={handleFeature} />
           </div>
         </section>
         {showHype && (

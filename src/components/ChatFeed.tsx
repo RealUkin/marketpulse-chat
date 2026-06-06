@@ -7,10 +7,12 @@ export function ChatFeed({
   messages,
   paused,
   highlight,
+  onFeature,
 }: {
   messages: UnifiedMessage[];
   paused: boolean;
   highlight: string[];
+  onFeature?: (m: UnifiedMessage) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -29,7 +31,7 @@ export function ChatFeed({
       ) : (
         <div className="flex flex-col py-2">
           {messages.map((m) => (
-            <MessageRow key={m.id} m={m} highlight={highlight} />
+            <MessageRow key={m.id} m={m} highlight={highlight} onFeature={onFeature} />
           ))}
         </div>
       )}
