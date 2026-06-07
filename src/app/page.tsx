@@ -233,12 +233,13 @@ export default function Dashboard() {
     youtube: youtube.trim() || undefined,
   });
 
-  const handleApply = (channels: ChannelConfig, demoFlag: boolean) => {
+  const handleApply = (channels: ChannelConfig, demoFlag: boolean, cryptoFlag: boolean) => {
     setTwitch(channels.twitch ?? "");
     setKick(channels.kick ?? "");
     setX(channels.x ?? "");
     setYoutube(channels.youtube ?? "");
     setDemo(demoFlag);
+    setCrypto(cryptoFlag);
     subscribe(channels, demoFlag);
   };
 
@@ -643,6 +644,7 @@ export default function Dashboard() {
         open={connectOpen}
         initial={channelsFromState()}
         demo={demo}
+        crypto={crypto}
         onClose={() => setConnectOpen(false)}
         onApply={handleApply}
       />

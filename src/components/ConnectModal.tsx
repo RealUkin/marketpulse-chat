@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { ChannelConfig, Platform } from "@shared/types";
 import { PLATFORM_META } from "@/lib/platform";
 import { PlatformLogo } from "@/components/platformLogos";
+import { ITrend } from "@/components/icons";
 
 const PLATFORMS: Platform[] = ["twitch", "kick", "youtube", "x"];
 const PLACEHOLDER: Record<Platform, string> = {
@@ -24,12 +25,14 @@ export function ConnectModal({
   demo,
   onClose,
   onApply,
+  crypto,
 }: {
   open: boolean;
   initial: ChannelConfig;
   demo: boolean;
   onClose: () => void;
-  onApply: (channels: ChannelConfig, demo: boolean) => void;
+  onApply: (channels: ChannelConfig, demo: boolean, crypto: boolean) => void;
+  crypto: boolean;
 }) {
   const [vals, setVals] = useState<Record<Platform, string>>({
     twitch: initial.twitch ?? "",
@@ -43,13 +46,14 @@ export function ConnectModal({
     youtube: !!initial.youtube,
     x: !!initial.x,
   });
+  const [cryptoOn, setCryptoOn] = useState(crypto);
 
   if (!open) return null;
 
   const apply = (useDemo: boolean) => {
     const channels: ChannelConfig = {};
     for (const p of PLATFORMS) if (enabled[p] && vals[p].trim()) channels[p] = vals[p].trim();
-    onApply(channels, useDemo);
+    onApply(channels, useDemo, cryptoOn);
     onClose();
   };
 
@@ -113,6 +117,30 @@ export function ConnectModal({
               </div>
             );
           })}
+        </div>
+
+        {/* Optional crypto add-on — deliberately opt-in, off by default */}
+        <div className="mt-3 rounded-xl border border-gold/20 bg-gold/[0.04] p-3">
+          <div className="flex items-center gap-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gold/20 text-gold">
+              <ITrend className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold leading-tight">Crypto Intelligence</div>
+              <div className="text-[11px] leading-snug text-zinc-500">
+                Live prices, chat-vs-market divergence &amp; Polymarket odds. Optional — for trading streams.
+              </div>
+            </div>
+            <button
+              onClick={() => setCryptoOn((v) => !v)}
+              aria-label="Toggle crypto intelligence"
+              className={`relative h-5 w-9 shrink-0 rounded-full transition ${cryptoOn ? "bg-gold" : "bg-white/15"}`}
+            >
+              <span
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${cryptoOn ? "left-[18px]" : "left-0.5"}`}
+              />
+            </button>
+          </div>
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-2">
