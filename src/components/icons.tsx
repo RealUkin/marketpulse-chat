@@ -86,3 +86,33 @@ export const ITrash = (p: P) => (
     <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M7 7l1 13h8l1-13" />
   </Icon>
 );
+export const IClock = (p: P) => (
+  <Icon className={p.className}>
+    <circle cx="12" cy="12" r="9" />
+    <polyline points="12 7 12 12 15.5 14" />
+  </Icon>
+);
+export const IBan = (p: P) => (
+  <Icon className={p.className}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m5.6 5.6 12.8 12.8" />
+  </Icon>
+);
+export const IStar = (p: P) => (
+  <Icon className={p.className}>
+    <polygon points="12 3 14.6 9 21 9.6 16.1 13.9 17.6 20.1 12 16.8 6.4 20.1 7.9 13.9 3 9.6 9.4 9" />
+  </Icon>
+);
+export const IPin = (p: P) => (
+  <Icon className={p.className}>
+    <path d="M12 17v5" />
+    <path d="M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.7l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+  </Icon>
+);
+export const IGlobe = (p: P) => (
+  <Icon className={p.className}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18" />
+    <path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18" />
+  </Icon>
+);

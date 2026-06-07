@@ -2,6 +2,7 @@ import { memo, type ReactNode } from "react";
 import type { EventInfo, UnifiedMessage } from "@shared/types";
 import { PLATFORM_META } from "@/lib/platform";
 import { Badge } from "@/components/Badge";
+import { ITrash, IClock, IBan, IStar, IPin, IGlobe } from "@/components/icons";
 
 function renderText(text: string, tickers: string[]): ReactNode {
   if (tickers.length === 0) return text;
@@ -137,15 +138,15 @@ function Row({
             {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
           {m.platform === "twitch" && canModerate && onModerate && (
-            <span className="flex shrink-0 items-center gap-1 pl-1 text-xs opacity-0 transition group-hover:opacity-100">
-              <button onClick={() => onModerate("delete", m)} title="Delete message" className="text-zinc-600 transition hover:text-amber-400">
-                🗑
+            <span className="flex shrink-0 items-center gap-1.5 pl-1 opacity-0 transition group-hover:opacity-100">
+              <button onClick={() => onModerate("delete", m)} title="Delete message" className="inline-flex items-center text-zinc-500 transition hover:text-amber-400">
+                <ITrash />
               </button>
-              <button onClick={() => onModerate("timeout", m)} title="Timeout 10 min" className="text-zinc-600 transition hover:text-orange-400">
-                ⏳
+              <button onClick={() => onModerate("timeout", m)} title="Timeout 10 min" className="inline-flex items-center text-zinc-500 transition hover:text-orange-400">
+                <IClock />
               </button>
-              <button onClick={() => onModerate("ban", m)} title="Ban user" className="text-zinc-600 transition hover:text-red-400">
-                ⛔
+              <button onClick={() => onModerate("ban", m)} title="Ban user" className="inline-flex items-center text-zinc-500 transition hover:text-red-400">
+                <IBan />
               </button>
             </span>
           )}
@@ -153,34 +154,38 @@ function Row({
             <button
               onClick={() => onFeature(m)}
               title="Feature this message on stream"
-              className="shrink-0 pl-1 text-xs text-zinc-600 opacity-0 transition hover:text-accent group-hover:opacity-100"
+              className="inline-flex shrink-0 items-center pl-1 text-zinc-500 opacity-0 transition hover:text-accent group-hover:opacity-100"
             >
-              ★
+              <IStar />
             </button>
           )}
           {onPin && (
             <button
               onClick={() => onPin(m)}
               title={pinned ? "Unpin" : "Pin to top"}
-              className={`shrink-0 pl-1 text-xs transition hover:text-accent ${
-                pinned ? "text-accent opacity-100" : "text-zinc-600 opacity-0 group-hover:opacity-100"
+              className={`inline-flex shrink-0 items-center pl-1 transition hover:text-accent ${
+                pinned ? "text-accent opacity-100" : "text-zinc-500 opacity-0 group-hover:opacity-100"
               }`}
             >
-              📌
+              <IPin />
             </button>
           )}
           {aiEnabled && onTranslate && !translation && (
             <button
               onClick={() => onTranslate(m)}
               title="Translate to English"
-              className="shrink-0 pl-1 text-xs text-zinc-600 opacity-0 transition hover:text-accent group-hover:opacity-100"
+              className="inline-flex shrink-0 items-center pl-1 text-zinc-500 opacity-0 transition hover:text-accent group-hover:opacity-100"
             >
-              🌐
+              <IGlobe />
             </button>
           )}
         </div>
         <div className="break-words text-[14px] text-zinc-200">{renderBody(m)}</div>
-        {translation && <div className="mt-0.5 text-[13px] italic text-zinc-400">🌐 {translation}</div>}
+        {translation && (
+          <div className="mt-0.5 flex items-center gap-1 text-[13px] italic text-zinc-400">
+            <IGlobe className="h-3 w-3 shrink-0" /> {translation}
+          </div>
+        )}
       </div>
     </div>
   );
