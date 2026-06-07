@@ -47,6 +47,7 @@ export default function Dashboard() {
   const lastBeepRef = useRef(0);
   const prevLenRef = useRef(0);
   const ttsLastIdRef = useRef<string | null>(null);
+  const prefsLoaded = useRef(false);
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem("mp-theme"));
@@ -60,6 +61,25 @@ export default function Dashboard() {
     document.documentElement.style.setProperty("--accent", THEMES[themeIdx].rgb);
     window.localStorage.setItem("mp-theme", String(themeIdx));
   }, [themeIdx]);
+  // Remember view preferences across reloads (your setup persists).
+  useEffect(() => {
+    try {
+      const p = JSON.parse(window.localStorage.getItem("mp-prefs") ?? "{}");
+      if (typeof p.crypto === "boolean") setCrypto(p.crypto);
+      if (typeof p.hideBots === "boolean") setHideBots(p.hideBots);
+    } catch {
+      /* ignore */
+    }
+    prefsLoaded.current = true;
+  }, []);
+  useEffect(() => {
+    if (!prefsLoaded.current) return;
+    try {
+      window.localStorage.setItem("mp-prefs", JSON.stringify({ crypto, hideBots }));
+    } catch {
+      /* ignore */
+    }
+  }, [crypto, hideBots]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
