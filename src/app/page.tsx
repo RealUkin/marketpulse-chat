@@ -41,6 +41,7 @@ export default function Dashboard() {
   const [ttsOn, setTtsOn] = useState(false);
   const [hideBots, setHideBots] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [firstRun, setFirstRun] = useState(false);
   const [waveDismissed, setWaveDismissed] = useState<string | null>(null);
   const [pinned, setPinned] = useState<UnifiedMessage[]>([]);
   const [auth, setAuth] = useState<TwitchAuth | null>(null);
@@ -107,6 +108,22 @@ export default function Dashboard() {
       /* ignore */
     }
   }, [crypto, hideBots, demo, twitch, kick, x, youtube]);
+  // First-run nudge: point new users to Connect (shown once).
+  useEffect(() => {
+    try {
+      if (!window.localStorage.getItem("mp-seen")) setFirstRun(true);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const dismissFirstRun = useCallback(() => {
+    setFirstRun(false);
+    try {
+      window.localStorage.setItem("mp-seen", "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -383,12 +400,31 @@ export default function Dashboard() {
 
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-ink-900/50 px-5 py-2.5 text-sm">
-        <button
-          onClick={() => setConnectOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-1.5 font-semibold text-white shadow-lg shadow-accent/25 transition hover:opacity-90"
-        >
-          <IPlus className="h-4 w-4" /> Connect platforms
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => {
+              setConnectOpen(true);
+              dismissFirstRun();
+            }}
+            className={`flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-1.5 font-semibold text-white shadow-lg shadow-accent/25 transition hover:opacity-90 ${
+              firstRun ? "ring-2 ring-accent/50 ring-offset-2 ring-offset-ink-900" : ""
+            }`}
+          >
+            <IPlus className="h-4 w-4" /> Connect platforms
+          </button>
+          {firstRun && (
+            <div className="absolute left-0 top-full z-20 mt-2.5 w-60 rounded-xl border border-accent/30 bg-ink-900 p-3 text-left shadow-2xl">
+              <span className="absolute -top-1.5 left-6 h-3 w-3 rotate-45 border-l border-t border-accent/30 bg-ink-900" />
+              <div className="text-[13px] font-semibold text-zinc-100">👋 You&apos;re in live Demo Mode</div>
+              <div className="mt-1 text-[12px] leading-snug text-zinc-400">
+                Hit Connect to add your own Twitch, Kick, YouTube &amp; X channels — no login needed to read chat.
+              </div>
+              <button onClick={dismissFirstRun} className="mt-2 text-[12px] font-semibold text-accent hover:underline">
+                Got it
+              </button>
+            </div>
+          )}
+        </div>
         {connectedCount > 0 && (
           <span className="text-[11px] text-zinc-500">{connectedCount} connected</span>
         )}
