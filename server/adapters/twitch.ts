@@ -6,6 +6,34 @@ import { twitchParts, expandWordEmotes } from "../../shared/emotes";
 import { getTwitchEmotes } from "../emoteRegistry";
 import type { Adapter, Emit, StatusFn } from "./types";
 
+function twitchBadgeMeta(setId: string, version: string): { type: BadgeInfo["type"]; label: string; count?: number } {
+  switch (setId) {
+    case "broadcaster":
+      return { type: "broadcaster", label: "Host" };
+    case "moderator":
+      return { type: "moderator", label: "Mod" };
+    case "vip":
+      return { type: "vip", label: "VIP" };
+    case "subscriber":
+      return { type: "subscriber", label: "Sub", count: Number(version) || undefined };
+    case "founder":
+      return { type: "founder", label: "Founder" };
+    case "bits":
+    case "bits-leader":
+      return { type: "bits", label: "Bits" };
+    case "partner":
+      return { type: "verified", label: "Verified" };
+    case "staff":
+    case "admin":
+    case "global_mod":
+      return { type: "staff", label: "Staff" };
+    case "og":
+      return { type: "og", label: "OG" };
+    default:
+      return { type: "unknown", label: setId.replace(/[-_]/g, " ") };
+  }
+}
+
 export function createTwitchAdapter(channel: string, emit: Emit, status: StatusFn): Adapter {
   const chan = channel.replace(/^#/, "").toLowerCase().trim();
   status("twitch", "connecting");
@@ -43,13 +71,9 @@ export function createTwitchAdapter(channel: string, emit: Emit, status: StatusF
       verified: false,
     };
 
-    const badges: BadgeInfo[] = [];
-    if (flags.broadcaster) badges.push({ type: "broadcaster", label: "Host" });
-    if (flags.moderator) badges.push({ type: "moderator", label: "Mod" });
-    if (flags.vip) badges.push({ type: "vip", label: "VIP" });
-    if (flags.subscriber) {
-      badges.push({ type: "subscriber", label: "Sub", count: b.subscriber ? Number(b.subscriber) : undefined });
-    }
+    const badges: BadgeInfo[] = Object.entries(b)
+      .filter(([, version]) => version != null)
+      .map(([setId, version]) => ({ ...twitchBadgeMeta(setId, String(version)), setId, version: String(version) }));
 
     const msg: UnifiedMessage = {
       id: tags.id ?? `tw_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,

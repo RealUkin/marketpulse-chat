@@ -25,7 +25,7 @@ const THEMES = [
 ];
 
 export default function Dashboard() {
-  const { messages, totalCount, socketState, status, markets, prices, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult, aiEnabled, requestRecap, recapState, clearRecap, translations, requestTranslate } = useChatSocket();
+  const { messages, totalCount, socketState, status, markets, prices, featured, subscribe, setPaused, clear, feature, unfeature, sendMessage, sendError, moderate, modResult, clearModResult, aiEnabled, requestRecap, recapState, clearRecap, translations, requestTranslate, twitchBadges, requestBadges } = useChatSocket();
   const [twitch, setTwitch] = useState("");
   const [kick, setKick] = useState("");
   const [x, setX] = useState("");
@@ -62,6 +62,16 @@ export default function Dashboard() {
   useEffect(() => {
     consumeTwitchRedirect().then((a) => setAuth(a ?? getStoredTwitchAuth()));
   }, []);
+  // Once signed in, fetch the connected Twitch channel's real badge images (once per channel).
+  const badgesReqRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!auth) return;
+    const bid = messages.find((m) => m.platform === "twitch" && m.channelId)?.channelId;
+    if (bid && !badgesReqRef.current.has(bid)) {
+      badgesReqRef.current.add(bid);
+      requestBadges(bid, auth.token, twitchClientId());
+    }
+  }, [messages, auth, requestBadges]);
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", THEMES[themeIdx].rgb);
     window.localStorage.setItem("mp-theme", String(themeIdx));
@@ -689,6 +699,7 @@ export default function Dashboard() {
               connecting={connecting}
               demo={demo}
               hasChannels={connectedCount > 0}
+              badges={twitchBadges}
             />
           </div>
           <Composer

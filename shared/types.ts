@@ -22,6 +22,8 @@ export interface BadgeInfo {
   type: BadgeType;
   label: string;
   count?: number; // e.g. subscriber months / gifted subs
+  setId?: string; // platform badge set id (e.g. Twitch "subscriber") — for real badge images
+  version?: string; // platform badge version (maps to the exact custom image)
 }
 
 export interface MessageFlags {
@@ -99,6 +101,7 @@ export type ClientCommand =
     }
   | { type: "recap"; texts: string[] }
   | { type: "translate"; id: string; text: string }
+  | { type: "badges"; broadcasterId: string; token: string; clientId: string }
   | { type: "ping" };
 
 export interface MarketInfo {
@@ -127,4 +130,5 @@ export type ServerEvent =
   | { type: "sendResult"; ok: boolean; error?: string }
   | { type: "modResult"; ok: boolean; action?: string; error?: string }
   | { type: "recapResult"; ok: boolean; text?: string; error?: string }
-  | { type: "translateResult"; id: string; ok: boolean; text?: string; error?: string };
+  | { type: "translateResult"; id: string; ok: boolean; text?: string; error?: string }
+  | { type: "badgeSet"; data: Record<string, string> };

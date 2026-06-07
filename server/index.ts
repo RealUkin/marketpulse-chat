@@ -14,6 +14,7 @@ import { sendTwitchMessage } from "./send";
 import { moderateTwitch } from "./moderate";
 import { fetchPrices } from "./coingecko";
 import { aiConfigured, recap, translate } from "./ai";
+import { fetchTwitchBadges } from "./badges";
 
 const PORT = Number(process.env.WS_PORT ?? 3001);
 
@@ -138,6 +139,13 @@ wss.on("connection", (ws) => {
       translate(cmd.text)
         .then((text) => reply({ type: "translateResult", id: cmd.id, ok: true, text }))
         .catch((e) => reply({ type: "translateResult", id: cmd.id, ok: false, error: String(e?.message ?? e) }));
+    } else if (cmd.type === "badges") {
+      const reply = (ev: ServerEvent) => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(ev));
+      };
+      fetchTwitchBadges(cmd)
+        .then((data) => reply({ type: "badgeSet", data }))
+        .catch(() => reply({ type: "badgeSet", data: {} }));
     }
   });
 

@@ -52,6 +52,7 @@ function Row({
   aiEnabled,
   translation,
   onTranslate,
+  badges,
 }: {
   m: UnifiedMessage;
   highlight: string[];
@@ -63,6 +64,7 @@ function Row({
   aiEnabled?: boolean;
   translation?: string;
   onTranslate?: (m: UnifiedMessage) => void;
+  badges?: Record<string, string>;
 }) {
   if (m.event) return <EventRow m={m} />;
   const meta = PLATFORM_META[m.platform];
@@ -121,9 +123,21 @@ function Row({
               🔗
             </span>
           )}
-          {m.badges.map((b, i) => (
-            <Badge key={i} badge={b} />
-          ))}
+          {m.badges.map((b, i) => {
+            const img = b.setId && b.version ? badges?.[`${b.setId}/${b.version}`] : undefined;
+            return img ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={img}
+                alt={b.label}
+                title={b.count ? `${b.label} (${b.count})` : b.label}
+                className="inline-block h-[18px] w-[18px] shrink-0 align-text-bottom"
+              />
+            ) : (
+              <Badge key={i} badge={b} />
+            );
+          })}
           {m.regular ? (
             <span
               className="rounded bg-gold/20 px-1 text-[10px] font-bold uppercase leading-none text-gold ring-1 ring-gold/40"

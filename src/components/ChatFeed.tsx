@@ -18,6 +18,7 @@ export function ChatFeed({
   connecting,
   demo,
   hasChannels,
+  badges,
 }: {
   messages: UnifiedMessage[];
   paused: boolean;
@@ -33,6 +34,7 @@ export function ChatFeed({
   connecting?: boolean;
   demo?: boolean;
   hasChannels?: boolean;
+  badges?: Record<string, string>;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -80,6 +82,7 @@ export function ChatFeed({
               aiEnabled={aiEnabled}
               translation={translations?.[m.id]}
               onTranslate={onTranslate}
+              badges={badges}
             />
           ))}
         </div>

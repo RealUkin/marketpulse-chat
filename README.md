@@ -25,7 +25,7 @@ Built for the [Market Bubble](https://x.com/MarketBubble) **$10,000 Vibe Code Ch
 ## ✨ Features
 
 - **Unified real-time feed** — Twitch, X, Kick, and YouTube in one stream, each message tagged with a colored source badge (Twitch purple, Kick green, X mono, YouTube red) and a per-user avatar.
-- **Normalized identity & roles** — broadcaster / mod / VIP / subscriber (with months) / member / verified, mapped to one consistent badge system across every platform.
+- **Normalized identity & roles** — broadcaster / mod / VIP / subscriber (with months) / member / verified, mapped to one consistent badge system across every platform. Signed in, Twitch badges render as the **real custom images** (your channel's sub tiers, bits, etc.) — chat matches native exactly; clean pills otherwise.
 - **Full emote support** — native emotes + **channel sub emotes** + **7TV / BTTV / FFZ** (Twitch) and **7TV** (Kick) third-party emotes + YouTube emojis, all rendered as images. Plus an **emote "pop"** effect in the overlay when chat spams.
 - **🔥 Hype Intelligence panel** (built for a trading audience):
   - Live **$ticker / cashtag** detection, highlighted inline + ranked leaderboard

@@ -31,6 +31,7 @@ export function useChatSocket() {
   const [aiEnabled, setAiEnabled] = useState(false);
   const [recapState, setRecapState] = useState<{ loading: boolean; text?: string; error?: string } | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [twitchBadges, setTwitchBadges] = useState<Record<string, string>>({});
 
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
@@ -126,7 +127,7 @@ export function useChatSocket() {
       else if (ev.type === "translateResult") {
         const tx = ev.text;
         if (ev.ok && tx) setTranslations((t) => ({ ...t, [ev.id]: tx }));
-      }
+      } else if (ev.type === "badgeSet") setTwitchBadges(ev.data);
     };
 
     ws.onerror = () => ws.close();
@@ -239,6 +240,10 @@ export function useChatSocket() {
     const ws = wsRef.current;
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "translate", id, text }));
   }, []);
+  const requestBadges = useCallback((broadcasterId: string, token: string, clientId: string) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "badges", broadcasterId, token, clientId }));
+  }, []);
 
   return {
     messages,
@@ -264,5 +269,7 @@ export function useChatSocket() {
     clearRecap,
     translations,
     requestTranslate,
+    twitchBadges,
+    requestBadges,
   };
 }
