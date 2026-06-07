@@ -4,6 +4,7 @@ import type { UnifiedMessage } from "@shared/types";
 import { useChatSocket } from "@/lib/useChatSocket";
 import { PLATFORM_META } from "@/lib/platform";
 import { Badge } from "@/components/Badge";
+import { PlatformLogo } from "@/components/platformLogos";
 
 // OBS browser-source overlay: transparent background, compact chips, newest at bottom.
 // URL params: ?twitch=<ch>&kick=<ch>&x=<broadcastId>&demo=1&max=18
@@ -22,10 +23,11 @@ export default function Overlay() {
     const twitch = p.get("twitch") ?? undefined;
     const kick = p.get("kick") ?? undefined;
     const x = p.get("x") ?? undefined;
-    const demo = p.get("demo") === "1" || (!twitch && !kick && !x);
+    const youtube = p.get("youtube") ?? undefined;
+    const demo = p.get("demo") === "1" || (!twitch && !kick && !x && !youtube);
     const m = parseInt(p.get("max") ?? "18", 10);
     if (!Number.isNaN(m)) setMax(m);
-    subscribe({ twitch, kick, x }, demo);
+    subscribe({ twitch, kick, x, youtube }, demo);
   }, [subscribe]);
 
   // Emote "pop": when chat spams the same emote, float a big one up the screen.
@@ -143,10 +145,10 @@ const OverlayRow = memo(function OverlayRow({ m }: { m: UnifiedMessage }) {
       style={{ boxShadow: `inset 3px 0 0 ${meta.color}` }}
     >
       <span
-        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[11px] font-bold"
+        className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded"
         style={{ backgroundColor: meta.color, color: meta.fg }}
       >
-        {meta.letter}
+        <PlatformLogo platform={m.platform} className="h-3 w-3" />
       </span>
       <div className="min-w-0">
         {m.badges.slice(0, 3).map((b, i) => (
