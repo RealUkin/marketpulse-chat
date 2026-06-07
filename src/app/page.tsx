@@ -61,25 +61,51 @@ export default function Dashboard() {
     document.documentElement.style.setProperty("--accent", THEMES[themeIdx].rgb);
     window.localStorage.setItem("mp-theme", String(themeIdx));
   }, [themeIdx]);
-  // Remember view preferences across reloads (your setup persists).
+  // Remember your setup across reloads — view prefs + connected channels.
   useEffect(() => {
     try {
       const p = JSON.parse(window.localStorage.getItem("mp-prefs") ?? "{}");
       if (typeof p.crypto === "boolean") setCrypto(p.crypto);
       if (typeof p.hideBots === "boolean") setHideBots(p.hideBots);
+      const ch = p.channels ?? {};
+      if ((ch.twitch || ch.kick || ch.x || ch.youtube) && p.demo === false) {
+        setTwitch(ch.twitch ?? "");
+        setKick(ch.kick ?? "");
+        setX(ch.x ?? "");
+        setYoutube(ch.youtube ?? "");
+        setDemo(false);
+        subscribe(
+          {
+            twitch: ch.twitch || undefined,
+            kick: ch.kick || undefined,
+            x: ch.x || undefined,
+            youtube: ch.youtube || undefined,
+          },
+          false,
+        );
+      }
     } catch {
       /* ignore */
     }
     prefsLoaded.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
     if (!prefsLoaded.current) return;
     try {
-      window.localStorage.setItem("mp-prefs", JSON.stringify({ crypto, hideBots }));
+      window.localStorage.setItem(
+        "mp-prefs",
+        JSON.stringify({
+          crypto,
+          hideBots,
+          demo,
+          channels: { twitch: twitch.trim(), kick: kick.trim(), x: x.trim(), youtube: youtube.trim() },
+        }),
+      );
     } catch {
       /* ignore */
     }
-  }, [crypto, hideBots]);
+  }, [crypto, hideBots, demo, twitch, kick, x, youtube]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
