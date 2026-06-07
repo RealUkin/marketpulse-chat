@@ -9,6 +9,7 @@ import type {
   ServerEvent,
   UnifiedMessage,
 } from "@shared/types";
+import { GLOBAL_TWITCH_BADGES } from "@/lib/twitchBadges";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:3001";
 const MAX_MESSAGES = 250;
@@ -31,7 +32,7 @@ export function useChatSocket() {
   const [aiEnabled, setAiEnabled] = useState(false);
   const [recapState, setRecapState] = useState<{ loading: boolean; text?: string; error?: string } | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
-  const [twitchBadges, setTwitchBadges] = useState<Record<string, string>>({});
+  const [twitchBadges, setTwitchBadges] = useState<Record<string, string>>(GLOBAL_TWITCH_BADGES);
 
   const wsRef = useRef<WebSocket | null>(null);
   const bufferRef = useRef<UnifiedMessage[]>([]);
@@ -127,7 +128,7 @@ export function useChatSocket() {
       else if (ev.type === "translateResult") {
         const tx = ev.text;
         if (ev.ok && tx) setTranslations((t) => ({ ...t, [ev.id]: tx }));
-      } else if (ev.type === "badgeSet") setTwitchBadges(ev.data);
+      } else if (ev.type === "badgeSet") setTwitchBadges({ ...GLOBAL_TWITCH_BADGES, ...ev.data });
     };
 
     ws.onerror = () => ws.close();

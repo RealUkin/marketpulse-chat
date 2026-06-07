@@ -76,9 +76,15 @@ function makeBadges(platform: Platform): { badges: BadgeInfo[]; flags: MessageFl
     if (Math.random() < 0.45) { badges.push({ type: "member", label: "Member" }); flags.subscriber = true; }
     if (Math.random() < 0.25) { badges.push({ type: "verified", label: "Verified" }); flags.verified = true; }
   } else {
-    if (r < 0.06) { badges.push({ type: "broadcaster", label: "Host" }); flags.broadcaster = true; }
-    else if (r < 0.18) { badges.push({ type: "moderator", label: "Mod" }); flags.moderator = true; }
-    else if (r < 0.3) { badges.push({ type: "vip", label: "VIP" }); flags.vip = true; }
+    // Twitch demo badges carry real setId/version so global badges (mod/vip/etc.)
+    // render as actual images via GLOBAL_TWITCH_BADGES; Kick stays as pills.
+    const tw = (setId: string) => (platform === "twitch" ? { setId, version: "1" } : {});
+    if (r < 0.06) { badges.push({ type: "broadcaster", label: "Host", ...tw("broadcaster") }); flags.broadcaster = true; }
+    else if (r < 0.18) { badges.push({ type: "moderator", label: "Mod", ...tw("moderator") }); flags.moderator = true; }
+    else if (r < 0.3) { badges.push({ type: "vip", label: "VIP", ...tw("vip") }); flags.vip = true; }
+    if (platform === "twitch" && Math.random() < 0.2) {
+      badges.push({ type: "unknown", label: "Turbo", setId: "turbo", version: "1" });
+    }
     if (Math.random() < 0.4) {
       badges.push({ type: "subscriber", label: "Sub", count: 1 + Math.floor(Math.random() * 30) });
       flags.subscriber = true;

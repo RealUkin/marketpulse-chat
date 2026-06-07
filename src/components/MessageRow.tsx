@@ -70,7 +70,6 @@ function Row({
   const meta = PLATFORM_META[m.platform];
   const scam = m.intelligence?.risk === "scam";
   const userColor = m.color ?? meta.color;
-  const initial = (m.displayName || "?").charAt(0).toUpperCase();
   const hit =
     !scam && highlight.length > 0 && highlight.some((k) => m.text.toLowerCase().includes(k));
 
@@ -80,31 +79,34 @@ function Row({
         scam ? "bg-red-950/30" : hit ? "bg-accent/[0.08] ring-1 ring-inset ring-accent/25" : ""
       } ${pinned ? "opacity-40" : ""}`}
     >
-      {/* Avatar with platform badge */}
+      {/* Platform identity: real avatar (X/YouTube) with a platform corner, else a clean platform chip (native Twitch/Kick have no avatars) */}
       <div className="relative mt-0.5 shrink-0">
         {m.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={m.avatarUrl}
-            alt=""
-            className="h-7 w-7 rounded-full border-2 object-cover"
-            style={{ borderColor: `${meta.color}aa` }}
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={m.avatarUrl}
+              alt=""
+              className="h-7 w-7 rounded-full border-2 object-cover"
+              style={{ borderColor: `${meta.color}aa` }}
+            />
+            <span
+              className="absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full ring-2 ring-ink-950"
+              style={{ backgroundColor: meta.color, color: meta.fg }}
+              title={meta.label}
+            >
+              <PlatformLogo platform={m.platform} className="h-2.5 w-2.5" />
+            </span>
+          </>
         ) : (
           <div
-            className="grid h-7 w-7 place-items-center rounded-full border-2 text-[12px] font-bold"
-            style={{ backgroundColor: `${userColor}26`, color: userColor, borderColor: `${meta.color}aa` }}
+            className="grid h-7 w-7 place-items-center rounded-lg"
+            style={{ backgroundColor: meta.color, color: meta.fg }}
+            title={meta.label}
           >
-            {initial}
+            <PlatformLogo platform={m.platform} className="h-4 w-4" />
           </div>
         )}
-        <span
-          className="absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full ring-2 ring-ink-950"
-          style={{ backgroundColor: meta.color, color: meta.fg }}
-          title={meta.label}
-        >
-          <PlatformLogo platform={m.platform} className="h-2.5 w-2.5" />
-        </span>
       </div>
 
       {/* Body */}
@@ -132,6 +134,9 @@ function Row({
                 src={img}
                 alt={b.label}
                 title={b.count ? `${b.label} (${b.count})` : b.label}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
                 className="inline-block h-[18px] w-[18px] shrink-0 align-text-bottom"
               />
             ) : (
