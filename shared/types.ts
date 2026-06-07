@@ -70,6 +70,7 @@ export interface UnifiedMessage {
   intelligence?: Intelligence;
   event?: EventInfo; // sub / gift / bits / raid / superchat alert
   firstSeen?: boolean; // first message from this user this session (client-tagged)
+  regular?: boolean; // returning loyal viewer (cumulative across sessions, client-tagged)
 }
 
 export interface ChannelConfig {

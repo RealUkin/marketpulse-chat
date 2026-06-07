@@ -36,6 +36,9 @@ export function useChatSocket() {
   const bufferRef = useRef<UnifiedMessage[]>([]);
   const seenUsersRef = useRef<Set<string>>(new Set()); // for first-time-chatter tagging
   const totalRef = useRef(0); // session message counter (uncapped)
+  const priorViewersRef = useRef<Record<string, number>>({}); // cumulative msg counts from prior sessions
+  const liveViewersRef = useRef<Record<string, number>>({}); // prior + this session, persisted
+  const lastViewerSaveRef = useRef(0);
   const attemptsRef = useRef(0);
   const pausedRef = useRef(false);
   const closingRef = useRef(false);
@@ -56,6 +59,17 @@ export function useChatSocket() {
           seenUsersRef.current.add(key);
           m.firstSeen = true;
         }
+        if ((priorViewersRef.current[key] ?? 0) >= 15) m.regular = true;
+        liveViewersRef.current[key] = (liveViewersRef.current[key] ?? 0) + 1;
+      }
+      if (Date.now() - lastViewerSaveRef.current > 10_000) {
+        lastViewerSaveRef.current = Date.now();
+        try {
+          const top = Object.entries(liveViewersRef.current).sort((a, b) => b[1] - a[1]).slice(0, 400);
+          window.localStorage.setItem("mp-viewers", JSON.stringify(Object.fromEntries(top)));
+        } catch {
+          /* ignore */
+        }
       }
       totalRef.current += batch.length;
       setTotalCount(totalRef.current);
@@ -65,6 +79,20 @@ export function useChatSocket() {
       });
     }, 100);
     return () => clearInterval(t);
+  }, []);
+
+  // Load returning-viewer history (cumulative message counts) from prior sessions.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("mp-viewers");
+      if (raw) {
+        const m = JSON.parse(raw) as Record<string, number>;
+        priorViewersRef.current = m;
+        liveViewersRef.current = { ...m };
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const connect = useCallback(() => {
