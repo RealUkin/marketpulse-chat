@@ -6,12 +6,13 @@ import { PLATFORM_META } from "@/lib/platform";
 import { ChatFeed } from "@/components/ChatFeed";
 import { HypePanel } from "@/components/HypePanel";
 import { ConnectModal } from "@/components/ConnectModal";
+import { OverlayModal } from "@/components/OverlayModal";
 import { Composer } from "@/components/Composer";
 import { consumeTwitchRedirect, getStoredTwitchAuth, twitchClientId, type TwitchAuth } from "@/lib/twitchAuth";
 import { isBot } from "@/lib/bots";
 import { downloadMomentCard } from "@/lib/momentCard";
 import { detectScamWave, type ScamWave } from "@shared/scamWave";
-import { IPlus, ITrend, IBot, IBell, IBellOff, ISpeaker, ISparkle, ICamera, IPause, IPlay, ITrash } from "@/components/icons";
+import { IPlus, ITrend, IBot, IBell, IBellOff, ISpeaker, ISparkle, ICamera, IPause, IPlay, ITrash, IMonitor } from "@/components/icons";
 
 const ALL: Platform[] = ["twitch", "kick", "youtube", "x"];
 
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [themeIdx, setThemeIdx] = useState(0);
   const [crypto, setCrypto] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
   const [highlight, setHighlight] = useState("");
   const [soundOn, setSoundOn] = useState(false);
   const [ttsOn, setTtsOn] = useState(false);
@@ -437,6 +439,13 @@ export default function Dashboard() {
           />
           <span className={demo ? "text-accent" : "text-zinc-400"}>Demo</span>
         </label>
+        <button
+          onClick={() => setOverlayOpen(true)}
+          title="Get the OBS browser-source overlay URL"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs text-zinc-300 ring-1 ring-white/5 transition hover:bg-white/10"
+        >
+          <IMonitor /> Overlay
+        </button>
 
         <div className="mx-1 h-5 w-px bg-white/10" />
 
@@ -683,6 +692,12 @@ export default function Dashboard() {
         crypto={crypto}
         onClose={() => setConnectOpen(false)}
         onApply={handleApply}
+      />
+      <OverlayModal
+        open={overlayOpen}
+        channels={channelsFromState()}
+        demo={demo}
+        onClose={() => setOverlayOpen(false)}
       />
 
       {recapState && (

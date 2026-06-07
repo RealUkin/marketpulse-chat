@@ -116,3 +116,15 @@ export const IGlobe = (p: P) => (
     <path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18" />
   </Icon>
 );
+export const IMonitor = (p: P) => (
+  <Icon className={p.className}>
+    <rect x="2" y="3" width="20" height="14" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+  </Icon>
+);
+export const ICopy = (p: P) => (
+  <Icon className={p.className}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15V5a2 2 0 0 1 2-2h8" />
+  </Icon>
+);
