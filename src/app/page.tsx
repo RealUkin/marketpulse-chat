@@ -134,6 +134,7 @@ export default function Dashboard() {
     return messages.filter((m) => now - m.timestamp < 60_000).length;
   }, [messages]);
   const liveCount = useMemo(() => Object.values(status).filter((v) => v === "connected").length, [status]);
+  const connecting = useMemo(() => Object.values(status).some((v) => v === "connecting"), [status]);
 
   // Coordinated scam-wave detector (many accounts, same message).
   const scamWave = useMemo(() => detectScamWave(messages, Date.now()), [messages]);
@@ -608,6 +609,9 @@ export default function Dashboard() {
               aiEnabled={aiEnabled}
               translations={translations}
               onTranslate={(m) => requestTranslate(m.id, m.text)}
+              connecting={connecting}
+              demo={demo}
+              hasChannels={connectedCount > 0}
             />
           </div>
           <Composer

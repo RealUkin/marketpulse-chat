@@ -15,6 +15,9 @@ export function ChatFeed({
   aiEnabled,
   translations,
   onTranslate,
+  connecting,
+  demo,
+  hasChannels,
 }: {
   messages: UnifiedMessage[];
   paused: boolean;
@@ -27,6 +30,9 @@ export function ChatFeed({
   aiEnabled?: boolean;
   translations?: Record<string, string>;
   onTranslate?: (m: UnifiedMessage) => void;
+  connecting?: boolean;
+  demo?: boolean;
+  hasChannels?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -39,8 +45,25 @@ export function ChatFeed({
   return (
     <div ref={ref} className="scrollbar-thin h-full overflow-y-auto">
       {messages.length === 0 ? (
-        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-zinc-600">
-          No messages yet — Demo Mode is on by default, hit <span className="mx-1 text-accent">Connect</span> to start the feed.
+        <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+          {connecting ? (
+            <>
+              <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/15 border-t-accent" />
+              <p className="text-sm text-zinc-400">Connecting to chat…</p>
+            </>
+          ) : demo ? (
+            <p className="text-sm leading-relaxed text-zinc-500">
+              <span className="text-zinc-300">Demo Mode</span> — sample chat across all four platforms.
+              <br />
+              Hit <span className="text-accent">Connect platforms</span> to add your own.
+            </p>
+          ) : hasChannels ? (
+            <p className="text-sm text-zinc-500">Connected — waiting for the first message…</p>
+          ) : (
+            <p className="text-sm text-zinc-500">
+              Hit <span className="text-accent">Connect platforms</span> to start your feed.
+            </p>
+          )}
         </div>
       ) : (
         <div className="flex flex-col py-2">
