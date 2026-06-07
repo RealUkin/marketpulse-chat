@@ -5,9 +5,16 @@ import { PLATFORM_META } from "@/lib/platform";
 
 const pct = (n: number, d: number) => Math.round((n / (d || 1)) * 100);
 
+const STOP = new Set(
+  "the a an and or but to of in on at it is im you your u my me we us he she they them this that for with so do did just got get gonna no yes yeah yep nah lol lmao lmfao omg gg wp ez wtf rip pog poggers kekw lulw based real true fr ngl bro bruh man dude chat stream guys hey hi hello yo sup what when where why how who all out up was are be been have has had not can will would here there now then like oh ok okay too any one".split(
+    " ",
+  ),
+);
+
 function computeStats(messages: UnifiedMessage[]) {
   const tickers: Record<string, number> = {};
   const chatters: Record<string, { count: number; color?: string }> = {};
+  const words: Record<string, number> = {};
   let bull = 0;
   let bear = 0;
   let neu = 0;
@@ -22,6 +29,10 @@ function computeStats(messages: UnifiedMessage[]) {
       continue;
     }
     for (const t of m.intelligence?.tickers ?? []) tickers[t] = (tickers[t] ?? 0) + 1;
+    for (const w of m.text.toLowerCase().split(/[^a-z0-9']+/)) {
+      if (w.length < 3 || STOP.has(w) || /^\d+$/.test(w)) continue;
+      words[w] = (words[w] ?? 0) + 1;
+    }
     const se = m.intelligence?.sentiment;
     if (se === "bullish") bull++;
     else if (se === "bearish") bear++;
@@ -34,11 +45,13 @@ function computeStats(messages: UnifiedMessage[]) {
   }
   const topTickers = Object.entries(tickers).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const topChatters = Object.entries(chatters).sort((a, b) => b[1].count - a[1].count).slice(0, 5);
+  const topWords = Object.entries(words).sort((a, b) => b[1] - a[1]).slice(0, 8);
   return {
     topTickers,
     maxTicker: topTickers.length ? topTickers[0][1] : 1,
     topChatters,
     maxChatter: topChatters.length ? topChatters[0][1].count : 1,
+    topWords,
     bull,
     bear,
     neu,
@@ -124,6 +137,24 @@ export function HypePanel({
                 </div>
                 <span className="w-6 shrink-0 text-right text-xs tabular-nums text-zinc-500">{c.count}</span>
               </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card title="Trending Now">
+        {s.topWords.length === 0 ? (
+          <Empty hint="what chat's buzzing about shows up here" />
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {s.topWords.map(([w, c]) => (
+              <span
+                key={w}
+                className="inline-flex items-center gap-1 rounded-full bg-white/[0.06] px-2 py-0.5 text-[12px] text-zinc-300 ring-1 ring-white/5"
+              >
+                {w}
+                <span className="text-[10px] text-zinc-500">{c}</span>
+              </span>
             ))}
           </div>
         )}
