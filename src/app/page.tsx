@@ -457,6 +457,7 @@ export default function Dashboard() {
           />
           <button
             onClick={toggleSound}
+            aria-label="Sound on new messages"
             title="Play a sound on new messages"
             className={`inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
               soundOn ? "bg-accent/15 text-accent ring-accent/30" : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
@@ -466,6 +467,7 @@ export default function Dashboard() {
           </button>
           <button
             onClick={toggleTts}
+            aria-label="Read chat aloud (text-to-speech)"
             title="Read new chat aloud (text-to-speech)"
             className={`inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs ring-1 transition ${
               ttsOn ? "bg-accent/15 text-accent ring-accent/30" : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
