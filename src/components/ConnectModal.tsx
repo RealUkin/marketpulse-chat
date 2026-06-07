@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { ChannelConfig, Platform } from "@shared/types";
 import { PLATFORM_META } from "@/lib/platform";
+import { PlatformLogo } from "@/components/platformLogos";
 
 const PLATFORMS: Platform[] = ["twitch", "kick", "youtube", "x"];
 const PLACEHOLDER: Record<Platform, string> = {
@@ -82,10 +83,10 @@ export function ConnectModal({
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[12px] font-black"
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-lg"
                     style={{ backgroundColor: meta.color, color: meta.fg }}
                   >
-                    {meta.letter.slice(0, 2)}
+                    <PlatformLogo platform={p} className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold leading-tight">{meta.label}</div>

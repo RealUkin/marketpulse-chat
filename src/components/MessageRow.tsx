@@ -3,6 +3,7 @@ import type { EventInfo, UnifiedMessage } from "@shared/types";
 import { PLATFORM_META } from "@/lib/platform";
 import { Badge } from "@/components/Badge";
 import { ITrash, IClock, IBan, IStar, IPin, IGlobe } from "@/components/icons";
+import { PlatformLogo } from "@/components/platformLogos";
 
 function renderText(text: string, tickers: string[]): ReactNode {
   if (tickers.length === 0) return text;
@@ -96,11 +97,11 @@ function Row({
           </div>
         )}
         <span
-          className="absolute -bottom-1 -right-1 grid h-3.5 w-3.5 place-items-center rounded-full text-[7px] font-black ring-2 ring-ink-950"
+          className="absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full ring-2 ring-ink-950"
           style={{ backgroundColor: meta.color, color: meta.fg }}
           title={meta.label}
         >
-          {meta.letter.slice(0, 1)}
+          <PlatformLogo platform={m.platform} className="h-2.5 w-2.5" />
         </span>
       </div>
 
@@ -212,11 +213,11 @@ function EventRow({ m }: { m: UnifiedMessage }) {
     <div className={`mx-2 my-1 flex animate-slide-in items-center gap-2.5 rounded-lg bg-gradient-to-r px-3 py-2 ring-1 ${s.cls}`}>
       <span className="text-lg leading-none">{s.icon}</span>
       <span
-        className="grid h-4 w-4 shrink-0 place-items-center rounded text-[8px] font-black"
+        className="grid h-4 w-4 shrink-0 place-items-center rounded"
         style={{ backgroundColor: meta.color, color: meta.fg }}
         title={meta.label}
       >
-        {meta.letter.slice(0, 1)}
+        <PlatformLogo platform={m.platform} className="h-2.5 w-2.5" />
       </span>
       <span className="font-bold text-white">{m.displayName}</span>
       <span className="font-semibold">{ev.label}</span>
