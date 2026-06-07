@@ -52,6 +52,7 @@ export default function Dashboard() {
   const prevLenRef = useRef(0);
   const ttsLastIdRef = useRef<string | null>(null);
   const prefsLoaded = useRef(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem("mp-theme"));
@@ -126,6 +127,34 @@ export default function Dashboard() {
       /* ignore */
     }
   }, []);
+
+  // Keyboard shortcuts: "/" focus search · k pause · c crypto · Esc close (ignored while typing).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const typing = !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if (e.key === "Escape") {
+        setConnectOpen(false);
+        setOverlayOpen(false);
+        setPanelOpen(false);
+        clearRecap();
+        return;
+      }
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (e.key.toLowerCase() === "k") {
+        const next = !paused;
+        setPausedState(next);
+        setPaused(next);
+      } else if (e.key.toLowerCase() === "c") {
+        setCrypto((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [paused, clearRecap, setPaused]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -500,9 +529,11 @@ export default function Dashboard() {
             <IBot /> {hideBots ? "Hidden" : "Bots"}
           </button>
           <input
+            ref={searchRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search messages…"
+            title="Search (press /)"
             className="w-40 rounded-lg bg-white/5 px-3 py-1.5 text-sm outline-none ring-1 ring-white/5 transition focus:ring-2 focus:ring-accent/60"
           />
           <input
