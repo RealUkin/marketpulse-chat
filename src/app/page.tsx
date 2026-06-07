@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [soundOn, setSoundOn] = useState(false);
   const [ttsOn, setTtsOn] = useState(false);
   const [hideBots, setHideBots] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [waveDismissed, setWaveDismissed] = useState<string | null>(null);
   const [pinned, setPinned] = useState<UnifiedMessage[]>([]);
   const [auth, setAuth] = useState<TwitchAuth | null>(null);
@@ -421,6 +422,15 @@ export default function Dashboard() {
 
         <div className="ml-auto flex items-center gap-2">
           <button
+            onClick={() => setPanelOpen((v) => !v)}
+            aria-label="Toggle the stats panel"
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition lg:hidden ${
+              panelOpen ? "bg-accent/15 text-accent ring-accent/30" : "bg-white/5 text-zinc-400 ring-white/5 hover:bg-white/10"
+            }`}
+          >
+            <ITrend /> Stats
+          </button>
+          <button
             onClick={() => setCrypto((v) => !v)}
             title="Crypto markets + Polymarket — optional add-on, off by default"
             className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold ring-1 transition ${
@@ -609,7 +619,18 @@ export default function Dashboard() {
             sendError={sendError}
           />
         </section>
-        <aside className="scrollbar-thin hidden w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-ink-900/40 lg:block">
+        {panelOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            onClick={() => setPanelOpen(false)}
+            aria-hidden
+          />
+        )}
+        <aside
+          className={`scrollbar-thin w-80 shrink-0 overflow-y-auto border-l border-white/5 lg:static lg:z-auto lg:block lg:bg-ink-900/40 lg:shadow-none lg:backdrop-blur-none ${
+            panelOpen ? "fixed inset-y-0 right-0 z-40 bg-ink-900/95 shadow-2xl backdrop-blur" : "hidden"
+          }`}
+        >
           <HypePanel messages={messages} markets={markets} prices={prices} crypto={crypto} />
         </aside>
       </div>
